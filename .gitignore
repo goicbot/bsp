@@ -1,0 +1,9 @@
+.vscode
+.settings
+.cproject
+.project
+Debug/
+build/
+*.exe
+*.elf
+*.bin
