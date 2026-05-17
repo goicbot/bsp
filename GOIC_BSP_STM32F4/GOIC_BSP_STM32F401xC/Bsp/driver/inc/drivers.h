@@ -1,17 +1,17 @@
 /**
   ******************************************************************************
-  * @file           : bsp.h
-  * @brief          : Header for bsp.c file.
+  * @file           : drivers.h
+  * @brief          : Header for drivers.c file.
   * @author         : GOIC Embedded Systems
-  * @date           : Nov 11, 2025
+  * @date           : May 9, 2026
   * @version        : 1.0.0
-  * @copyright      : Copyright (c) 2025 GOIC Embedded Systems
+  * @copyright      : Copyright (c) 2026 GOIC Embedded Systems
   ******************************************************************************
   * @attention
   *
   * MIT License
   *
-  * Copyright (c) Nov 11, 2025 GOIC Embedded Systems
+  * Copyright (c) May 9, 2026 GOIC Embedded Systems
   *
   * Permission is hereby granted, free of charge, to any person obtaining a copy
   * of this software and associated documentation files (the "Software"), to deal
@@ -34,16 +34,16 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef BSP_INCLUDE_BSP_H_
-#define BSP_INCLUDE_BSP_H_
+#ifndef BSP_DRIVER_INC_DRIVERS_H_
+#define BSP_DRIVER_INC_DRIVERS_H_
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 /**
-  * @defgroup bsp_Module bsp Module
-  * @brief    Public API for bsp driver.
+  * @defgroup drivers_Module drivers Module
+  * @brief    Public API for drivers driver.
   * @{
   */
 
@@ -51,39 +51,50 @@ extern "C" {
 /* Includes -------------------------------------------------------------------*/
 /*******************************************************************************/
 
-#define __STM32F4_BSP_
-#ifdef __STM32F4_BSP_
-#include "stm32f4xx.h"	/* Choose the target MCU in this header file*/
+#if !defined(BSP_DRIVER)
+#define BSP_DRIVER
+#endif
+
+#if !defined(BSP_RCC)
+#define BSP_DRIVER_RCC
+#endif
+
+#ifdef BSP_DRIVER_RCC
+#include "rcc.h"
+#endif
+
+#if !defined(BSP_CRC)
+#define BSP_DRIVER_CRC
+#endif
+
+#ifdef BSP_DRIVER_CRC
+#include "crc.h"
 #endif
 
 /*******************************************************************************/
 /* Exported Types -------------------------------------------------------------*/
 /*******************************************************************************/
-
 /*--None*/
+
 
 /*******************************************************************************/
 /* Exported Constants ---------------------------------------------------------*/
 /*******************************************************************************/
-
 /*--None*/
 
 /*******************************************************************************/
 /* Exported Macros ------------------------------------------------------------*/
 /*******************************************************************************/
-
 /*--None*/
 
 /*******************************************************************************/
 /* Exported Variables ---------------------------------------------------------*/
 /*******************************************************************************/
-
 /*--None*/
 
 /*******************************************************************************/
 /* Exported Functions ---------------------------------------------------------*/
 /*******************************************************************************/
-
 /*--None*/
 
 /**
@@ -94,5 +105,5 @@ extern "C" {
 }
 #endif /* extern "C" */
 
-#endif /* BSP_INCLUDE_BSP_H_ */
+#endif /* BSP_DRIVER_INC_DRIVERS_H_ */
 /* End of File */
