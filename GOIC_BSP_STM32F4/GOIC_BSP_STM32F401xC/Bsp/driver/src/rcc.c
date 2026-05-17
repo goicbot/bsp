@@ -83,10 +83,8 @@ void vDriverRcc_INIT(){
 			 RCC_CR_HSEBYP_Msk | RCC_CR_CSSON_Msk | RCC_CR_PLLON_Msk | RCC_CR_PLLI2SON_Msk);
 
 	/* PLL configuration register*/
-	RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLM_Msk;
-	RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLN_Msk;
-	RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLP_Msk;
-	RCC->PLLCFGR &= ~RCC_PLLCFGR_PLLQ_Msk;
+	RCC->PLLCFGR &= ~( RCC_PLLCFGR_PLLM_Msk | RCC_PLLCFGR_PLLN_Msk | RCC_PLLCFGR_PLLP_Msk |
+			RCC_PLLCFGR_PLLQ_Msk);
 
 	RCC->PLLCFGR |= (RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLM_3 | RCC_PLLCFGR_PLLM_0);// 1.0 MHz = VCO_INPUT = BSP_RCC_HSE_OSC/BSP_RCC_PLLM
 	RCC->PLLCFGR |= (RCC_PLLCFGR_PLLN_4 | RCC_PLLCFGR_PLLN_2 | RCC_PLLCFGR_PLLN_0);// 336MHz = VCO_OUTPUT = VCO_INPUT * BSP_RCC_PLLN
@@ -106,45 +104,6 @@ void vDriverRcc_INIT(){
 	RCC->CR |= RCC_CR_PLLON;
 	RCC->CR |= RCC_CR_PLLI2SON;
 
-
-
 }
-
-
-
-/**
-  * @brief   Initializes the module.
-  * @details Configures internal state and prepares the driver.
-  * @param[in] config  Pointer to configuration structure.
-  * @return  Operation status.
-  * @pre     Must be called before Example_Update().
-  * @note    Thread-safe if called only during initialization phase.
-  */
-/*
-ExampleStatus_t Example_Init(const ExampleConfig_t *config)
-{
-    Example_ResetContext();
-    (void)config; // suppress unused warning
-    return EXAMPLE_OK;
-}
-*/
-
-/**
-  * @brief   Periodic update handler.
-  * @details Called periodically to refresh internal state.
-  * @param[in] delta_time_ms  Elapsed time since last call.
-  * @return  None.
-  * @note    Should be called in main loop or from scheduler.
-  */
-/*
-void Example_Update(uint32_t delta_time_ms)
-{
-    (void)delta_time_ms;
-    if (example_state == STATE_IDLE)
-    {
-        example_state = STATE_BUSY;
-    }
-}
-*/
 
 /* End of File */
