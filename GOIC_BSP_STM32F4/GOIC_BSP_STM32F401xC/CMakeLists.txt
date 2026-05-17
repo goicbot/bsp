@@ -36,7 +36,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU" AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm")
     set(IS_ARM TRUE)
     set(MCPU "-mcpu=cortex-m4")
     set(MFPU "-mfpu=fpv4-sp-d16")
-    set(MFLOAT_ABI "-mfloat-abi=softfp")
+    set(MFLOAT_ABI "-mfloat-abi=hard")
     set(MTHUMB "-mthumb")
     set(SYSCALLS "--specs=nosys.specs")
     set(LINKER_SCRIPT "${CMAKE_SOURCE_DIR}/linker/STM32F401RCTX_FLASH.ld")
@@ -54,26 +54,30 @@ endif()
 file(GLOB_RECURSE PROJECT_SOURCES
     "${CMAKE_SOURCE_DIR}/Core/Source/*.c"
     "${CMAKE_SOURCE_DIR}/Startup/*.s"
-    "${CMAKE_SOURCE_DIR}/Bsp/Source/*.c"
+    "${CMAKE_SOURCE_DIR}/bsp/driver/src/*.c"
     "${CMAKE_SOURCE_DIR}/App/*.c"
+    "${CMAKE_SOURCE_DIR}/App/HAL/*.c"
 )
 
 file(GLOB_RECURSE PROJECT_HEADERS
+	"${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include/*.h"
     "${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/*.h"
-    "${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include/*.h"
     "${CMAKE_SOURCE_DIR}/Core/Include/*.h"
-    "${CMAKE_SOURCE_DIR}/Drivers/Include/*.h"
-    "${CMAKE_SOURCE_DIR}/Bsp/Include/*.h"
+    "${CMAKE_SOURCE_DIR}/bsp/driver/inc/*.h"
+    "${CMAKE_SOURCE_DIR}/bsp/inc/*.h"
     "${CMAKE_SOURCE_DIR}/App/*.h"
+    "${CMAKE_SOURCE_DIR}/App/HAL/Include/*.h"
 )
 
 # ------------------------- INCLUDE DIRECTORIES -------------------------
 set(PROJECT_INCLUDES
-    ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include
-    ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include
-    ${CMAKE_SOURCE_DIR}/Core/Include
-    ${CMAKE_SOURCE_DIR}/Bsp/Include
-    ${CMAKE_SOURCE_DIR}/App
+${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Include/
+    ${CMAKE_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F4xx/Include/
+    ${CMAKE_SOURCE_DIR}/Core/Include/
+    ${CMAKE_SOURCE_DIR}/bsp/inc/
+    ${CMAKE_SOURCE_DIR}/bsp/driver/inc/
+    ${CMAKE_SOURCE_DIR}/App/
+    ${CMAKE_SOURCE_DIR}/App/HAL/Include/
 )
 
 # Add Newlib includes if ARM GCC
@@ -109,7 +113,9 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     STM32F401xC
     USE_CMSIS
+    DEBUG_BSP
 )
+add_definitions(-DSTM32F401xC)
 
 # ------------------------- LINKER FLAGS -------------------------
 if(IS_ARM AND LINKER_SCRIPT)
@@ -118,6 +124,7 @@ if(IS_ARM AND LINKER_SCRIPT)
     endif()
 
     target_link_options(${PROJECT_NAME} PRIVATE
+        ${MCPU} ${MTHUMB} ${MFPU} ${MFLOAT_ABI}   
         -T${LINKER_SCRIPT}
         ${SYSCALLS}
         -Wl,-Map=${PROJECT_NAME}.map
@@ -128,7 +135,6 @@ if(IS_ARM AND LINKER_SCRIPT)
 endif()
 
 # ------------------------- POST BUILD -------------------------
-# Ensure tools are defined
 if(IS_ARM)
     if(NOT CMAKE_OBJCOPY)
         set(CMAKE_OBJCOPY arm-none-eabi-objcopy)
@@ -140,8 +146,9 @@ if(IS_ARM)
     set(OUTPUT_DIR ${CMAKE_BINARY_DIR}/output)
 
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMENT "Generating binary and hex files in ${OUTPUT_DIR}..."
+        COMMENT "Generating ELF, binary and hex files in ${OUTPUT_DIR}..."
         COMMAND ${CMAKE_COMMAND} -E make_directory ${OUTPUT_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${PROJECT_NAME}> ${OUTPUT_DIR}/${PROJECT_NAME}.elf
         COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${PROJECT_NAME}> ${OUTPUT_DIR}/${PROJECT_NAME}.bin
         COMMAND ${CMAKE_OBJCOPY} -O ihex   $<TARGET_FILE:${PROJECT_NAME}> ${OUTPUT_DIR}/${PROJECT_NAME}.hex
         COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${PROJECT_NAME}>
@@ -156,3 +163,4 @@ if(IS_ARM)
 else()
     message(STATUS "Target: Native / Host compilation")
 endif()
+
