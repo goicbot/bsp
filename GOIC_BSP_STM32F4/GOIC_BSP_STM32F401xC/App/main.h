@@ -51,7 +51,15 @@ extern "C" {
 /* Includes -------------------------------------------------------------------*/
 /*******************************************************************************/
 
-#include "bsp.h"
+/* Assert header */
+#include <assert.h>
+/* Choose the target MCU in this header file*/
+#include "stm32f4xx.h"
+/* Board Support Package Core*/
+#include "bsp_core.h"
+/* Drivers */
+#include "drivers.h"
+
 
 /*******************************************************************************/
 /* Exported Types -------------------------------------------------------------*/

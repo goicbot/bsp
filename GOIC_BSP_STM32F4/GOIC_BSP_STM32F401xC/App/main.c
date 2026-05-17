@@ -39,6 +39,7 @@
 
 #include "main.h"
 
+
 /*******************************************************************************/
 /* Private Define -------------------------------------------------------------*/
 /*******************************************************************************/
@@ -78,6 +79,15 @@
   */
 int main()
 {
+	/* RCC module initialization */				vDriverRcc_INIT();
+	/* CRC driver OPEN */						xDriverCrc_OPEN();
+
+	uint32_t buf[3] = {0x01, 0xD0, 0x31};
+	uint8_t size = 3;
+	uint32_t crc = 0x00;
+	crc = 0x00UL;
+	xCrc_CALC(buf, size ,&crc);
+	/* CRC driver Close */						xDriverCrc_CLOSE();
 	while(1) /* Infinite Loop*/
 	{
 
