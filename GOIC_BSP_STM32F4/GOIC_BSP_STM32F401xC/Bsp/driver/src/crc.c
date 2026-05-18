@@ -75,33 +75,37 @@ static void vDriverCrc_DR_WRITE(uint32_t *);
 static void xDriverCrc_DR_READ(uint32_t *);
 /*static void vDriverCrc_IDR_WRITE(uint8_t);*/
 /*static void xDriverCrc_IDR_READ(uint8_t *);*/
-void xDriverCrc_OPEN();
-void xDriverCrc_CLOSE();
+BspReturn_t xDriverCrc_OPEN();
+BspReturn_t xDriverCrc_CLOSE();
 static BspReturn_t xCrc_ISOPEN();
 BspReturn_t xCrc_CALC(uint32_t *, uint8_t, uint32_t *);
 
 /**
  * @brief CRC driver CLOSE
  */
-void xDriverCrc_CLOSE()
+BspReturn_t xDriverCrc_CLOSE()
 {
 	if ( xCrc_ISOPEN() == BSP_RETURN_OK)
 	{
 		/* RCC AHB1 peripheral clock enable register */
 		RCC->AHB1ENR &= ~RCC_AHB1ENR_CRCEN;
+		return BSP_RETURN_OK;
 	}
+	return BSP_RETURN_ERROR_CRC;
 }
 
 /**
  * @brief CRC driver OPEN
  */
-void xDriverCrc_OPEN()
+BspReturn_t xDriverCrc_OPEN()
 {
 	if ( xCrc_ISOPEN() == BSP_RETURN_ERROR_CRC)
 	{
 		/* RCC AHB1 peripheral clock enable register */
 		RCC->AHB1ENR |= RCC_AHB1ENR_CRCEN;
+		return BSP_RETURN_OK;
 	}
+	return BSP_RETURN_ERROR_CRC;
 }
 
 /**

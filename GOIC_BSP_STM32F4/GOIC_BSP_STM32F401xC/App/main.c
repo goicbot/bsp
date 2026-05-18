@@ -80,14 +80,14 @@
 int main()
 {
 	/* RCC module initialization */				vDriverRcc_INIT();
-	/* CRC driver OPEN */						xDriverCrc_OPEN();
+	/* CRC driver OPEN */						assert(xDriverCrc_OPEN() == BSP_RETURN_OK);
 
 	uint32_t buf[3] = {0x01, 0xD0, 0x31};
 	uint8_t size = 3;
 	uint32_t crc = 0x00;
 	crc = 0x00UL;
 	xCrc_CALC(buf, size ,&crc);
-	/* CRC driver Close */						xDriverCrc_CLOSE();
+	/* CRC driver Close */						assert(xDriverCrc_CLOSE() == BSP_RETURN_OK);
 	while(1) /* Infinite Loop*/
 	{
 

@@ -80,8 +80,8 @@ extern "C"
   /* Exported Functions ---------------------------------------------------------*/
   /*******************************************************************************/
   /*--None*/
-  extern void xDriverCrc_OPEN();
-  extern void xDriverCrc_CLOSE();
+  extern BspReturn_t xDriverCrc_OPEN();
+  extern BspReturn_t xDriverCrc_CLOSE();
   extern BspReturn_t xCrc_CALC(uint32_t *, uint8_t, uint32_t *);
   /**
    * @}
