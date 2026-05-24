@@ -61,7 +61,9 @@ extern "C"
   typedef enum
   {
     BSP_RETURN_OK = 0,
+    BSP_RETURN_NOK = 0,
     BSP_RETURN_ERROR_CRC,
+    BSP_RETURN_ERROR_GPIO,
   } BspReturn_t;
 
   /*******************************************************************************/

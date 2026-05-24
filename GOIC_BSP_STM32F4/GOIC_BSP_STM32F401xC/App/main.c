@@ -80,8 +80,23 @@
 int main()
 {
 	/* RCC module initialization */				vDriverRcc_INIT();
-	/* CRC driver OPEN */						assert(xDriverCrc_OPEN() == BSP_RETURN_OK);
+	/* GPIO module initialization*/				xGpio_INIT();
+	/* CRC driver Open*/						assert(xDriverCrc_OPEN() == BSP_RETURN_OK);
 
+
+	GpioConfig_t gpioP13C_t = {
+			.pin = 13,
+			.port = GPIO_C,
+			.mode = GPIO_OUTPUT_MODE,
+			.type = GPIO_PUSH_PULL,
+			.speed = GPIO_HIGH_SPEED,
+			.pupdr = GPIO_PULL_UP,
+			.altFunc = GPIO_AF0,
+	};
+
+	/*GPIO CONFIG*/								assert(xGpio_CONFIG(&gpioP13C_t) == BSP_RETURN_OK);
+	xGpio_WRITE(&gpioP13C_t, GPIO_HIGH);
+	xGpio_WRITE(&gpioP13C_t, GPIO_LOW);
 	uint32_t buf[3] = {0x01, 0xD0, 0x31};
 	uint8_t size = 3;
 	uint32_t crc = 0x00;
