@@ -68,7 +68,18 @@ typedef enum{
 	GPIO_MAX_MODE,
 }GpioPortMode_t;
 
-#define GPIO_MODE_ENUM_CTRL(x)	(x >= GPIO_MAX_MODE)
+/*
+ * @brief Control of GpioPortMode_t type input into range
+ */
+static inline uint32_t GPIO_MODE_ENUM_CTRL(GpioPortMode_t mode)
+{
+	if(mode >= GPIO_MAX_MODE)
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
+
 /**
   * @brief Public enumeration representing the port label group
   */
@@ -82,7 +93,17 @@ typedef enum{
 	GPIO_MAX_PORT,
 }GpioPortLabel_t;
 
-#define GPIO_PORT_ENUM_CTRL(x)	(x >= GPIO_MAX_PORT)
+/*
+ * @brief Control of GpioPortLabel_t type input into range
+ */
+static inline uint32_t GPIO_PORT_ENUM_CTRL(GpioPortLabel_t port)
+{
+	if(port >= GPIO_MAX_PORT)
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
 
 /**
   * @brief Public enumeration representing the pin label
@@ -107,7 +128,18 @@ typedef enum{
 	GPIO_PIN_MAX,
 }GpioPinLabel_t;
 
-#define GPIO_PIN_ENUM_CTRL(x)	(x >= GPIO_PIN_MAX)
+
+/*
+ * @brief Control of GpioPinLabel_t type input into range
+ */
+static inline uint32_t GPIO_PIN_ENUM_CTRL(GpioPinLabel_t pin)
+{
+	if(pin >= GPIO_PIN_MAX)
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
 
 /**
   * @brief Public enumeration representing the output type label
@@ -118,7 +150,18 @@ typedef enum{
 	GPIO_MAX_OUTPUT_TYPE,
 }GpioOutputType_t;
 
-#define GPIO_OUTTYPE_ENUM_CTRL(x)	(x >= GPIO_MAX_OUTPUT_TYPE)
+
+/*
+ * @brief Control of GpioOutputType_t type input into range
+ */
+static inline uint32_t GPIO_OUTTYPE_ENUM_CTRL(GpioOutputType_t outtype)
+{
+	if(outtype >= GPIO_MAX_OUTPUT_TYPE)
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
 
 /**
  * @brief Public enumeration representing the I/O output speed
@@ -131,7 +174,18 @@ typedef enum{
 	GPIO_OUTPUT_SPEED_MAX,
 }GpioOutputSpeed_t;
 
-#define GPIO_SPEED_ENUM_CTRL(x)	(x >= GPIO_OUTPUT_SPEED_MAX)
+
+/*
+ * @brief Control of GpioOutputSpeed_t type input into range
+ */
+static inline uint32_t GPIO_SPEED_ENUM_CTRL(GpioOutputSpeed_t speed)
+{
+	if(speed >= GPIO_OUTPUT_SPEED_MAX)
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
 
 /**
  * @brief Public enumeration representing the Pull-Up/Pull-Down
@@ -143,7 +197,18 @@ typedef enum{
 	GPIO_PUPDR_MAX,
 }GpioPupdr_t;
 
-#define GPIO_PUPDR_ENUM_CTRL(x)	(x >= GPIO_PUPDR_MAX)
+
+/*
+ * @brief Control of GpioPupdr_t type input into range
+ */
+static inline uint32_t GPIO_PUPDR_ENUM_CTRL(GpioPupdr_t pudpr)
+{
+	if(pudpr >= GPIO_PUPDR_MAX )
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
 
 /**
  * @brief Public enumeration representing the GPIO state
@@ -154,7 +219,18 @@ typedef enum{
 	GPIO_STATE_MAX,
 }GpioState_t;
 
-#define GPIO_STATE_ENUM_CTRL(x)	(x >= GPIO_STATE_MAX)
+
+/*
+ * @brief Control of GpioState_t type input into range
+ */
+static inline uint32_t GPIO_STATE_ENUM_CTRL(GpioState_t state)
+{
+	if(state >= GPIO_STATE_MAX)
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
 
 /**
  * @brief Public enumeration representing the GPIO alternate functions
@@ -179,8 +255,22 @@ typedef enum{
 	GPIO_AF_MAX,
 }GpioAltFunc_t;
 
-#define GPIO_AF_ENUM_CTRL(x)	(x >= GPIO_AF_MAX)
 
+/*
+ * @brief Control of GpioAltFunc_t type input into range
+ */
+static inline uint32_t GPIO_AF_ENUM_CTRL(GpioAltFunc_t af)
+{
+	if(af >= GPIO_AF_MAX)
+	{
+		return 0x01UL;
+	}
+	return 0x00UL;
+}
+
+/*
+ * @brief This structure contains the basic GPIOx configuration for a certain pin
+ */
 typedef struct{
 	GpioPinLabel_t		pin;
 	GpioPortLabel_t		port;
@@ -191,45 +281,34 @@ typedef struct{
 	GpioAltFunc_t		altFunc;
 
 }GpioConfig_t;
-/**
-  * @brief Example of configuration structure.
-  */
-/*
-typedef struct
-{
-    uint32_t frequency;   ///< Operating frequency in Hz
-    uint16_t voltage;     ///< Operating voltage in mV
-} ExampleConfig_t;
-*/
+
 
 /*******************************************************************************/
 /* Exported Constants ---------------------------------------------------------*/
 /*******************************************************************************/
 /*--None*/
-/* #define EXAMPLE_DEFAULT_FREQUENCY   (1000U) */ /**< Default frequency in Hz */
 
 /*******************************************************************************/
 /* Exported Macros ------------------------------------------------------------*/
 /*******************************************************************************/
 /*--None*/
-/* #define EXAMPLE_IS_VALID(x)  ((x) <= 5000U) */ /**< Checks valid input range */
 
 /*******************************************************************************/
 /* Exported Variables ---------------------------------------------------------*/
 /*******************************************************************************/
 /*--None*/
-/* extern ExampleConfig_t g_example_config; */ /**< Global configuration instance */
 
 /*******************************************************************************/
 /* Exported Functions ---------------------------------------------------------*/
 /*******************************************************************************/
-BspReturn_t xGpio_LCKR(uint32_t,GpioPortLabel_t);
-BspReturn_t xGpio_CONFIG(GpioConfig_t *);
-BspReturn_t xGpio_WRITE(GpioConfig_t *, GpioState_t);
-BspReturn_t xGpio_READ(GpioConfig_t *, GpioState_t *);
-BspReturn_t xGpio_RESET(GpioPortLabel_t);
-void xGpio_INIT();
-void xGpio_END();
+extern BspReturn_t xGpio_LCKR(GpioPortLabel_t);
+extern BspReturn_t xGpio_CONFIG(GpioConfig_t *);
+extern BspReturn_t xGpio_WRITE(GpioConfig_t *, GpioState_t);
+extern BspReturn_t xGpio_READ(GpioConfig_t *, GpioState_t *);
+extern BspReturn_t xGpio_RESET(GpioPortLabel_t);
+extern BspReturn_t xGpio_TOGGLE(GpioConfig_t *);
+extern void xGpio_INIT();
+extern void xGpio_END();
 /**
   * @}
   */

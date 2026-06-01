@@ -95,8 +95,15 @@ int main()
 	};
 
 	/*GPIO CONFIG*/								assert(xGpio_CONFIG(&gpioP13C_t) == BSP_RETURN_OK);
-	xGpio_WRITE(&gpioP13C_t, GPIO_HIGH);
-	xGpio_WRITE(&gpioP13C_t, GPIO_LOW);
+
+	xGpio_TOGGLE(&gpioP13C_t);
+
+	//assert(xGpio_LCKR(0x01<<13,GPIO_C) == BSP_RETURN_OK );
+
+	/*GPIO CONFIG*/								assert(xGpio_CONFIG(&gpioP13C_t) == BSP_RETURN_OK);
+
+	xGpio_TOGGLE(&gpioP13C_t);
+
 	uint32_t buf[3] = {0x01, 0xD0, 0x31};
 	uint8_t size = 3;
 	uint32_t crc = 0x00;
