@@ -77,32 +77,33 @@
  * @brief RCC module initialization
  * @details The goal frequency PLL is of 84MHz
  */
-void vDriverRcc_INIT(){
+void vRcc_INIT(){
 
-	RCC->CR &= ~(RCC_CR_HSION_Msk | RCC_CR_HSITRIM_Msk |RCC_CR_HSEON_Msk |
-			 RCC_CR_HSEBYP_Msk | RCC_CR_CSSON_Msk | RCC_CR_PLLON_Msk | RCC_CR_PLLI2SON_Msk);
-
+
+	/* Enable HSE and wait for it to be ready*/
+	SET_BIT(RCC->CR, RCC_CR_HSEON);
+	while(READ_BIT(RCC->CR, RCC_CR_HSERDY) == 0x0UL){/*Do nothing*/}
+	// Enable Prefetch, Instruction Cache, Data Cache and set 2 Latency wait states
+	FLASH->ACR = FLASH_ACR_PRFTEN | FLASH_ACR_ICEN | FLASH_ACR_DCEN | FLASH_ACR_LATENCY_2WS;
+	// 3. Configure AHB and APB Bus Prescaler
+	// HCLK = 84MHz (Div 1), PCLK1 = 42MHz (Div 2 max), PCLK2 = 84MHz (Div 1)
+	MODIFY_REG(RCC->CFGR, RCC_CFGR_HPRE, RCC_CFGR_HPRE_DIV1);
+	MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE1, RCC_CFGR_PPRE1_DIV2);
+	MODIFY_REG(RCC->CFGR, RCC_CFGR_PPRE2, RCC_CFGR_PPRE2_DIV1);
 	/* PLL configuration register*/
-	RCC->PLLCFGR &= ~( RCC_PLLCFGR_PLLM_Msk | RCC_PLLCFGR_PLLN_Msk | RCC_PLLCFGR_PLLP_Msk |
-			RCC_PLLCFGR_PLLQ_Msk);
+	WRITE_REG(RCC->PLLCFGR,
+			(25 << RCC_PLLCFGR_PLLM_Pos) 	|
+			(336 << RCC_PLLCFGR_PLLN_Pos)	|
+			(1 << RCC_PLLCFGR_PLLP_Pos)	 	|
+			(7 << RCC_PLLCFGR_PLLQ_Pos)		|
+			RCC_PLLCFGR_PLLSRC_HSE);
 
-	RCC->PLLCFGR |= (RCC_PLLCFGR_PLLM_4 | RCC_PLLCFGR_PLLM_3 | RCC_PLLCFGR_PLLM_0);// 1.0 MHz = VCO_INPUT = BSP_RCC_HSE_OSC/BSP_RCC_PLLM
-	RCC->PLLCFGR |= (RCC_PLLCFGR_PLLN_4 | RCC_PLLCFGR_PLLN_2 | RCC_PLLCFGR_PLLN_0);// 336MHz = VCO_OUTPUT = VCO_INPUT * BSP_RCC_PLLN
-	RCC->PLLCFGR |= (RCC_PLLCFGR_PLLP_1); // 84MHz = VCO_OUTPUT / BSP_RCC_PLLP
-	RCC->PLLCFGR |= (RCC_PLLCFGR_PLLQ_2 | RCC_PLLCFGR_PLLQ_1 | RCC_PLLCFGR_PLLQ_0); // 48MHz = VCO_OUTPUT / BSP_RCC_PLLQ
-	RCC->PLLCFGR |= RCC_PLLCFGR_PLLSRC_HSE;
-
-	/* RCC clock configuration register*/
-	RCC->CFGR |= (RCC_CFGR_RTCPRE_4 | RCC_CFGR_RTCPRE_3 | RCC_CFGR_RTCPRE_0);
-	RCC->CFGR |= RCC_CFGR_SW_HSE;
-
-
-	/* Control Register */
-	RCC->CR |= RCC_CR_HSION;
-	RCC->CR |= RCC_CR_HSEON;
-	RCC->CR |= RCC_CR_CSSON;
-	RCC->CR |= RCC_CR_PLLON;
-	RCC->CR |= RCC_CR_PLLI2SON;
+	/* Enable PLL and wait for it to be ready*/
+	SET_BIT(RCC->CR, RCC_CR_PLLON);
+	while(READ_BIT(RCC->CR, RCC_CR_PLLRDY) == 0x0UL){/*Do nothing*/}
+	//Switch System Clock to PLL
+    MODIFY_REG(RCC->CFGR, RCC_CFGR_SW, RCC_CFGR_SW_PLL);
+    while (READ_BIT(RCC->CFGR, RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL) {/*Do nothing*/}
 
 }
 

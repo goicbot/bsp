@@ -39,6 +39,9 @@
 
 #include "main.h"
 
+#include "stddef.h"
+#include "stdio.h"
+
 
 /*******************************************************************************/
 /* Private Define -------------------------------------------------------------*/
@@ -73,18 +76,7 @@
 /*******************************************************************************/
 /* Public Function Implementations --------------------------------------------*/
 /*******************************************************************************/
-
-/**
-  * @brief   Main function.
-  */
-int main()
-{
-	/* RCC module initialization */				vDriverRcc_INIT();
-	/* GPIO module initialization*/				xGpio_INIT();
-	/* CRC driver Open*/						assert(xDriverCrc_OPEN() == BSP_RETURN_OK);
-
-
-	GpioConfig_t gpioP13C_t = {
+GpioConfig_t gpioP13C_t = {
 			.pin = 13,
 			.port = GPIO_C,
 			.mode = GPIO_OUTPUT_MODE,
@@ -93,6 +85,44 @@ int main()
 			.pupdr = GPIO_PULL_UP,
 			.altFunc = GPIO_AF0,
 	};
+
+volatile uint32_t sr_debug;
+void TIM2_IRQHandler()
+{
+	sr_debug = TIM2->SR;
+	if(TIM2->SR & TIM_SR_UIF)
+	{
+	    TIM2->SR &= ~TIM_SR_UIF;
+		xGpio_TOGGLE(&gpioP13C_t);
+	}
+}
+
+
+static void xTim2_INIT()
+{
+	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
+	TIM2->CNT = 0x0UL;
+	TIM2->PSC = 8399;
+	TIM2->ARR = 4999;
+	//TIM2->CCMR1 |= TIM_CCMR1_OC1M_0;
+	//TIM2->CCR1 = 0xF4240UL;
+	TIM2->DIER |= TIM_DIER_UIE;
+	TIM2->EGR = TIM_EGR_UG;
+	TIM2->SR = 0;
+
+	NVIC_EnableIRQ(TIM2_IRQn);
+	TIM2->CR1 |= TIM_CR1_CEN;
+
+}
+/**
+  * @brief   Main function.
+  */
+int main()
+{
+	/* RCC module initialization */				vRcc_INIT();
+	/* GPIO module initialization*/				xGpio_INIT();
+	/* CRC driver Open*/						assert(xCrc_OPEN() == BSP_RETURN_OK);
+
 
 	/*GPIO CONFIG*/								assert(xGpio_CONFIG(&gpioP13C_t) == BSP_RETURN_OK);
 
@@ -104,12 +134,13 @@ int main()
 
 	xGpio_TOGGLE(&gpioP13C_t);
 
+	xTim2_INIT();
 	uint32_t buf[3] = {0x01, 0xD0, 0x31};
 	uint8_t size = 3;
 	uint32_t crc = 0x00;
 	crc = 0x00UL;
 	xCrc_CALC(buf, size ,&crc);
-	/* CRC driver Close */						assert(xDriverCrc_CLOSE() == BSP_RETURN_OK);
+	/* CRC driver Close */						assert(xCrc_CLOSE() == BSP_RETURN_OK);
 	while(1) /* Infinite Loop*/
 	{
 

@@ -75,15 +75,15 @@ static void vDriverCrc_DR_WRITE(uint32_t *);
 static void xDriverCrc_DR_READ(uint32_t *);
 /*static void vDriverCrc_IDR_WRITE(uint8_t);*/
 /*static void xDriverCrc_IDR_READ(uint8_t *);*/
-BspReturn_t xDriverCrc_OPEN();
-BspReturn_t xDriverCrc_CLOSE();
+BspReturn_t xCrc_OPEN();
+BspReturn_t xCrc_CLOSE();
 static BspReturn_t xCrc_ISOPEN();
 BspReturn_t xCrc_CALC(uint32_t *, uint8_t, uint32_t *);
 
 /**
  * @brief CRC driver CLOSE
  */
-BspReturn_t xDriverCrc_CLOSE()
+BspReturn_t xCrc_CLOSE()
 {
 	if ( xCrc_ISOPEN() == BSP_RETURN_OK)
 	{
@@ -97,7 +97,7 @@ BspReturn_t xDriverCrc_CLOSE()
 /**
  * @brief CRC driver OPEN
  */
-BspReturn_t xDriverCrc_OPEN()
+BspReturn_t xCrc_OPEN()
 {
 	if ( xCrc_ISOPEN() == BSP_RETURN_ERROR_CRC)
 	{
