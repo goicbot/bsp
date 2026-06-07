@@ -39,6 +39,7 @@
 /*******************************************************************************/
 #include <stdio.h>
 #include "stm32f4xx.h"
+#include "rcc.h"
 #include "crc.h"
 
 /*******************************************************************************/
@@ -70,11 +71,11 @@
 /*******************************************************************************/
 /* Public Function Implementations --------------------------------------------*/
 /*******************************************************************************/
-static void vDriverCrc_RESET(void);
-static void vDriverCrc_DR_WRITE(uint32_t *);
-static void xDriverCrc_DR_READ(uint32_t *);
-/*static void vDriverCrc_IDR_WRITE(uint8_t);*/
-/*static void xDriverCrc_IDR_READ(uint8_t *);*/
+static void vCrc_RESET(void);
+static void vCrc_DR_WRITE(uint32_t );
+static void xCrc_DR_READ(uint32_t *);
+/*static void vCrc_IDR_WRITE(uint8_t);*/
+/*static void xCrc_IDR_READ(uint8_t *);*/
 BspReturn_t xCrc_OPEN();
 BspReturn_t xCrc_CLOSE();
 static BspReturn_t xCrc_ISOPEN();
@@ -85,13 +86,14 @@ BspReturn_t xCrc_CALC(uint32_t *, uint8_t, uint32_t *);
  */
 BspReturn_t xCrc_CLOSE()
 {
+	BspReturn_t rtnVal = BSP_RETURN_ERROR_CRC;
 	if ( xCrc_ISOPEN() == BSP_RETURN_OK)
 	{
 		/* RCC AHB1 peripheral clock enable register */
-		RCC->AHB1ENR &= ~RCC_AHB1ENR_CRCEN;
-		return BSP_RETURN_OK;
+		RCC_CLEAR_AHB1ENR(RCC_AHB1ENR_CRCEN);
+		rtnVal =  BSP_RETURN_OK;
 	}
-	return BSP_RETURN_ERROR_CRC;
+	return rtnVal;
 }
 
 /**
@@ -99,13 +101,14 @@ BspReturn_t xCrc_CLOSE()
  */
 BspReturn_t xCrc_OPEN()
 {
+	BspReturn_t rtnVal = BSP_RETURN_ERROR_CRC;
 	if ( xCrc_ISOPEN() == BSP_RETURN_ERROR_CRC)
 	{
 		/* RCC AHB1 peripheral clock enable register */
-		RCC->AHB1ENR |= RCC_AHB1ENR_CRCEN;
-		return BSP_RETURN_OK;
+		RCC_SET_AHB1ENR(RCC_AHB1ENR_CRCEN);
+		rtnVal = BSP_RETURN_OK;
 	}
-	return BSP_RETURN_ERROR_CRC;
+	return rtnVal;
 }
 
 /**
@@ -115,14 +118,18 @@ BspReturn_t xCrc_OPEN()
 
 BspReturn_t xCrc_ISOPEN()
 {
-	uint8_t bit;
+	BspReturn_t rtnVal = BSP_RETURN_ERROR_CRC;
 
-	bit = (uint8_t)((RCC->AHB1ENR & RCC_AHB1ENR_CRCEN_Msk) >> RCC_AHB1ENR_CRCEN_Pos);
+	uint32_t regVal;
 
-	if(bit)
-		return BSP_RETURN_OK;
-	else
-		return BSP_RETURN_ERROR_CRC;
+	regVal = RCC_READ_AHB1ENR(RCC_AHB1ENR_CRCEN);
+
+	if(regVal)
+	{
+		rtnVal =  BSP_RETURN_OK;
+	}
+
+	return rtnVal;
 }
 
 /**
@@ -135,68 +142,66 @@ BspReturn_t xCrc_ISOPEN()
  */
 BspReturn_t xCrc_CALC(uint32_t *p_buf, uint8_t size, uint32_t *p_crc)
 {
+	BspReturn_t rtnVal = BSP_RETURN_OK;
+	if ( xCrc_ISOPEN() == BSP_RETURN_ERROR_CRC || p_buf == NULL ||  size == 0x00UL || p_crc == NULL)
+	{
+	*p_crc = CRC_CR_RESET;
+	rtnVal = BSP_RETURN_ERROR_CRC;
+	}
 
-  if ( xCrc_ISOPEN() == BSP_RETURN_ERROR_CRC || p_buf == NULL ||  size == 0x00UL || p_crc == NULL)
-  {
-    *p_crc = CRC_CR_RESET;
-    return BSP_RETURN_ERROR_CRC;
-  }
+	/* Reset CRC */
+	vCrc_RESET();
 
-  /* Reset CRC */
-  vDriverCrc_RESET();
+	for (uint8_t idx = 0; idx < size; idx++)
+	{
+		vCrc_DR_WRITE(p_buf[idx]);
+	}
 
-  for (uint8_t idx = 0; idx < size; idx++)
-  {
-    vDriverCrc_DR_WRITE(&p_buf[idx]);
-  }
+	xCrc_DR_READ(p_crc);
 
-  xDriverCrc_DR_READ(p_crc);
-
-  return BSP_RETURN_OK;
+	return rtnVal;
 }
 
 /**
  * @brief Reset the CCR module through the Control Register
  */
-static void vDriverCrc_RESET()
+static void vCrc_RESET()
 {
-
-  CRC->CR |= CRC_CR_RESET;
+	SET_BIT(CRC->CR,CRC_CR_RESET);
 }
 
 /**
  * @brief Write data into DR register to calculate the CRC
  */
-static void vDriverCrc_DR_WRITE(uint32_t *data2Write)
+static void vCrc_DR_WRITE(uint32_t data2Write)
 {
-
-  CRC->DR = *data2Write;
+	WRITE_REG(CRC->DR,data2Write);
 }
 
 /**
  * @brief Read data from DR register with the calculated CRC
  */
-static void xDriverCrc_DR_READ(uint32_t *p_data2Read)
+static void xCrc_DR_READ(uint32_t *p_data2Read)
 {
 
-  *p_data2Read = CRC->DR;
+  *p_data2Read = READ_REG(CRC->DR);
 }
 
 /**
  * @brief Write data into IDR General Purpose register
  */
-/*static void vDriverCrc_IDR_WRITE( uint8_t data2Write){
+/*static void vCrc_IDR_WRITE( uint8_t data2Write){
 
-  CRC->IDR = data2Write;
+  WRITE_REG(CRC->IDR,data2Write);
 
 }*/
 
 /**
  * @brief Read data from IDR register general purpose
  */
-/*static	void xDriverCrc_IDR_READ(uint8_t *p_data2Read){
+/*static	void xCrc_IDR_READ(uint8_t *p_data2Read){
 
-  *p_data2Read = CRC->IDR;
+  *p_data2Read = READ_REG(CRC->IDR);
 
 }*/
 
