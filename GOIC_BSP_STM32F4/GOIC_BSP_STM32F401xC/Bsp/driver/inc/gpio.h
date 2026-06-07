@@ -34,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef BSP_DRIVER_INC_GPIO_H_
-#define BSP_DRIVER_INC_GPIO_H_
+#ifndef BSP_DRIVER_INC_PORT_H_
+#define BSP_DRIVER_INC_PORT_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,8 +63,8 @@ extern "C" {
 typedef enum{
 	GPIO_INPUT_MODE = 0,
 	GPIO_OUTPUT_MODE,
-	GPIO_ALTERNATE_FUNCTION_MODE,
-	GPIO_ANALOG_MODE,
+	PORT_ALTERNATE_FUNCTION_MODE,
+	PORT_ANALOG_MODE,
 	GPIO_MAX_MODE,
 }GpioPortMode_t;
 
@@ -84,13 +84,13 @@ static inline uint32_t GPIO_MODE_ENUM_CTRL(GpioPortMode_t mode)
   * @brief Public enumeration representing the port label group
   */
 typedef enum{
-	GPIO_A = 0,
-	GPIO_B,
-	GPIO_C,
-	GPIO_D,
-	GPIO_E,
-	GPIO_H,
-	GPIO_MAX_PORT,
+	PORT_A = 0,
+	PORT_B,
+	PORT_C,
+	PORT_D,
+	PORT_E,
+	PORT_H,
+	GPIO_PORT_MAX,
 }GpioPortLabel_t;
 
 /*
@@ -98,7 +98,7 @@ typedef enum{
  */
 static inline uint32_t GPIO_PORT_ENUM_CTRL(GpioPortLabel_t port)
 {
-	if(port >= GPIO_MAX_PORT)
+	if(port >= GPIO_PORT_MAX)
 	{
 		return 0x01UL;
 	}
@@ -109,22 +109,22 @@ static inline uint32_t GPIO_PORT_ENUM_CTRL(GpioPortLabel_t port)
   * @brief Public enumeration representing the pin label
   */
 typedef enum{
-	GPIO_PIN_0 = 0,
-	GPIO_PIN_1,
-	GPIO_PIN_2,
-	GPIO_PIN_3,
-	GPIO_PIN_4,
-	GPIO_PIN_5,
-	GPIO_PIN_6,
-	GPIO_PIN_7,
-	GPIO_PIN_8,
-	GPIO_PIN_9,
-	GPIO_PIN_10,
-	GPIO_PIN_11,
-	GPIO_PIN_12,
-	GPIO_PIN_13,
-	GPIO_PIN_14,
-	GPIO_PIN_15,
+	PIN_0 = 0,
+	PIN_1,
+	PIN_2,
+	PIN_3,
+	PIN_4,
+	PIN_5,
+	PIN_6,
+	PIN_7,
+	PIN_8,
+	PIN_9,
+	PIN_10,
+	PIN_11,
+	PIN_12,
+	PIN_13,
+	PIN_14,
+	PIN_15,
 	GPIO_PIN_MAX,
 }GpioPinLabel_t;
 
@@ -169,7 +169,7 @@ static inline uint32_t GPIO_OUTTYPE_ENUM_CTRL(GpioOutputType_t outtype)
 typedef enum{
 	GPIO_LOW_SPEED = 0,
 	GPIO_MEDIUM_SPEED,
-	GPIO_HIGH_SPEED,
+	PORT_HIGH_SPEED,
 	GPIO_VERY_HIGH_SPEED,
 	GPIO_OUTPUT_SPEED_MAX,
 }GpioOutputSpeed_t;
@@ -215,7 +215,7 @@ static inline uint32_t GPIO_PUPDR_ENUM_CTRL(GpioPupdr_t pudpr)
  */
 typedef enum{
 	GPIO_LOW = 0,
-	GPIO_HIGH,
+	PORT_HIGH,
 	GPIO_STATE_MAX,
 }GpioState_t;
 
@@ -236,32 +236,32 @@ static inline uint32_t GPIO_STATE_ENUM_CTRL(GpioState_t state)
  * @brief Public enumeration representing the GPIO alternate functions
  */
 typedef enum{
-	GPIO_AF0 = 0,
-	GPIO_AF1,
-	GPIO_AF2,
-	GPIO_AF3,
-	GPIO_AF4,
-	GPIO_AF5,
-	GPIO_AF6,
-	GPIO_AF7,
-	GPIO_AF8,
-	GPIO_AF9,
-	GPIO_AF10,
-	GPIO_AF11,
-	GPIO_AF12,
-	GPIO_AF13,
-	GPIO_AF14,
-	GPIO_AF15,
-	GPIO_AF_MAX,
+	PORT_AF0 = 0,
+	PORT_AF1,
+	PORT_AF2,
+	PORT_AF3,
+	PORT_AF4,
+	PORT_AF5,
+	PORT_AF6,
+	PORT_AF7,
+	PORT_AF8,
+	PORT_AF9,
+	PORT_AF10,
+	PORT_AF11,
+	PORT_AF12,
+	PORT_AF13,
+	PORT_AF14,
+	PORT_AF15,
+	PORT_AF_MAX,
 }GpioAltFunc_t;
 
 
 /*
  * @brief Control of GpioAltFunc_t type input into range
  */
-static inline uint32_t GPIO_AF_ENUM_CTRL(GpioAltFunc_t af)
+static inline uint32_t PORT_AF_ENUM_CTRL(GpioAltFunc_t af)
 {
-	if(af >= GPIO_AF_MAX)
+	if(af >= PORT_AF_MAX)
 	{
 		return 0x01UL;
 	}
@@ -296,19 +296,20 @@ typedef struct{
 /*******************************************************************************/
 /* Exported Variables ---------------------------------------------------------*/
 /*******************************************************************************/
-/*--None*/
+extern GpioConfig_t gpio[GPIO_PORT_MAX][GPIO_PIN_MAX];
 
 /*******************************************************************************/
 /* Exported Functions ---------------------------------------------------------*/
 /*******************************************************************************/
+
 extern BspReturn_t xGpio_LCKR(GpioPortLabel_t);
-extern BspReturn_t xGpio_CONFIG(GpioConfig_t *);
+extern BspReturn_t xPORT_CONFIG(GpioConfig_t *);
 extern BspReturn_t xGpio_WRITE(GpioConfig_t *, GpioState_t);
 extern BspReturn_t xGpio_READ(GpioConfig_t *, GpioState_t *);
 extern BspReturn_t xGpio_RESET(GpioPortLabel_t);
 extern BspReturn_t xGpio_TOGGLE(GpioConfig_t *);
-extern void xGpio_INIT();
-extern void xGpio_END();
+extern BspReturn_t xGpio_INIT();
+extern BspReturn_t xPORT_END();
 /**
   * @}
   */
@@ -317,5 +318,5 @@ extern void xGpio_END();
 }
 #endif /* extern "C" */
 
-#endif /* BSP_DRIVER_INC_GPIO_H_ */
+#endif /* BSP_DRIVER_INC_PORT_H_ */
 /* End of File */
