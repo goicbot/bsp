@@ -76,15 +76,6 @@
 /*******************************************************************************/
 /* Public Function Implementations --------------------------------------------*/
 /*******************************************************************************/
-GpioConfig_t gpioP13C_t = {
-			.pin = 13,
-			.port = GPIO_C,
-			.mode = GPIO_OUTPUT_MODE,
-			.type = GPIO_PUSH_PULL,
-			.speed = GPIO_HIGH_SPEED,
-			.pupdr = GPIO_PULL_UP,
-			.altFunc = GPIO_AF0,
-	};
 
 volatile uint32_t sr_debug;
 void TIM2_IRQHandler()
@@ -93,7 +84,7 @@ void TIM2_IRQHandler()
 	if(TIM2->SR & TIM_SR_UIF)
 	{
 	    TIM2->SR &= ~TIM_SR_UIF;
-		xGpio_TOGGLE(&gpioP13C_t);
+		xGpio_TOGGLE(&gpio[PORT_C][PIN_13]);
 	}
 }
 
@@ -124,15 +115,15 @@ int main()
 	/* CRC driver Open*/						assert(xCrc_OPEN() == BSP_RETURN_OK);
 
 
-	/*GPIO CONFIG*/								assert(xGpio_CONFIG(&gpioP13C_t) == BSP_RETURN_OK);
+	/*GPIO CONFIG*/								assert(xPORT_CONFIG(&gpio[PORT_C][PIN_13]) == BSP_RETURN_OK);
 
-	xGpio_TOGGLE(&gpioP13C_t);
+	xGpio_TOGGLE(&gpio[PORT_C][PIN_13]);
 
-	//assert(xGpio_LCKR(0x01<<13,GPIO_C) == BSP_RETURN_OK );
+	//assert(xGpio_LCKR(0x01<<13,PORT_C) == BSP_RETURN_OK );
 
-	/*GPIO CONFIG*/								assert(xGpio_CONFIG(&gpioP13C_t) == BSP_RETURN_OK);
+	/*GPIO CONFIG*/								assert(xPORT_CONFIG(&gpio[PORT_C][PIN_13]) == BSP_RETURN_OK);
 
-	xGpio_TOGGLE(&gpioP13C_t);
+	xGpio_TOGGLE(&gpio[PORT_C][PIN_13]);
 
 	xTim2_INIT();
 	uint32_t buf[3] = {0x01, 0xD0, 0x31};
