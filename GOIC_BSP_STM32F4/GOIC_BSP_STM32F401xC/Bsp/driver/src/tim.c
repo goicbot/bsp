@@ -1,17 +1,17 @@
 /**
   ******************************************************************************
-  * @file           : main.c
-  * @brief          : Source file for main.h module.
+  * @file           : tim.c
+  * @brief          : Source file for tim.h module.
   * @author         : GOIC Embedded Systems
-  * @date           : Nov 11, 2025
+  * @date           : Jun 14, 2026
   * @version        : 1.0.0
-  * @copyright      : Copyright (c) 2025 GOIC Embedded Systems
+  * @copyright      : Copyright (c) 2026 GOIC Embedded Systems
   ******************************************************************************
   * @attention
   *
   * MIT License
   *
-  * Copyright (c) Nov 11, 2025 GOIC Embedded Systems
+  * Copyright (c) Jun 14, 2026 GOIC Embedded Systems
   *
   * Permission is hereby granted, free of charge, to any person obtaining a copy
   * of this software and associated documentation files (the "Software"), to deal
@@ -37,103 +37,101 @@
 /* Includes -------------------------------------------------------------------*/
 /*******************************************************************************/
 
-#include "main.h"
-
-#include "stddef.h"
-#include "stdio.h"
-
+#include "tim.h"
 
 /*******************************************************************************/
 /* Private Define -------------------------------------------------------------*/
 /*******************************************************************************/
-
-/* None */
+/*--None*/
+/* #define EXAMPLE_TIMEOUT_MS   (100U) */ /**< Internal timeout constant */
 
 /*******************************************************************************/
 /* Private Typedef ------------------------------------------------------------*/
 /*******************************************************************************/
-
-/* None */
+/*--None*/
+/**
+  * @brief Internal state enumeration.
+  */
+/*
+typedef enum
+{
+    STATE_IDLE = 0U,
+    STATE_BUSY,
+    STATE_ERROR
+} ExampleState_t;
+*/
 
 /*******************************************************************************/
 /* Private Variables ----------------------------------------------------------*/
 /*******************************************************************************/
-
-/* None */
+/*--None*/
+/**
+  * @brief Internal context variable.
+  */
+/* static ExampleState_t example_state = STATE_IDLE; */
 
 /*******************************************************************************/
 /* Private Function Prototypes ------------------------------------------------*/
 /*******************************************************************************/
-
-/* None */
+/*--None*/
+/**
+  * @brief   Initializes the internal context.
+  * @details This helper function resets internal variables.
+  */
+/* static void Example_ResetContext(void); */
 
 /*******************************************************************************/
 /* Private Function Implementations -------------------------------------------*/
 /*******************************************************************************/
-
-/* None */
+/*--None*/
+/**
+  * @brief   Initializes internal context variables.
+  * @details This function is used internally by @ref Example_Init.
+  */
+/*
+static void Example_ResetContext(void)
+{
+    example_state = STATE_IDLE;
+}
+*/
 
 /*******************************************************************************/
 /* Public Function Implementations --------------------------------------------*/
 /*******************************************************************************/
-
-volatile uint32_t sr_debug;
-void TIM2_IRQHandler()
-{
-	sr_debug = TIM2->SR;
-	if(TIM2->SR & TIM_SR_UIF)
-	{
-	    TIM2->SR &= ~TIM_SR_UIF;
-		xGpioToggle(&gpio[PORT_C][PIN_13]);
-	}
-}
-
-
-static void xTim2_INIT()
-{
-	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-	TIM2->CNT = 0x0UL;
-	TIM2->PSC = 8399;
-	TIM2->ARR = 4999;
-	//TIM2->CCMR1 |= TIM_CCMR1_OC1M_0;
-	//TIM2->CCR1 = 0xF4240UL;
-	TIM2->DIER |= TIM_DIER_UIE;
-	TIM2->EGR = TIM_EGR_UG;
-	TIM2->SR = 0;
-
-	NVIC_EnableIRQ(TIM2_IRQn);
-	TIM2->CR1 |= TIM_CR1_CEN;
-
-}
+/*--None*/
 /**
-  * @brief   Main function.
+  * @brief   Initializes the module.
+  * @details Configures internal state and prepares the driver.
+  * @param[in] config  Pointer to configuration structure.
+  * @return  Operation status.
+  * @pre     Must be called before Example_Update().
+  * @note    Thread-safe if called only during initialization phase.
   */
-int main()
+/*
+ExampleStatus_t Example_Init(const ExampleConfig_t *config)
 {
-	/* RCC module initialization */				vRcc_INIT();
-	/* GPIO module initialization*/				xGpioInit();
-	/* CRC driver Open*/						assert(xCrcOpen() == BSP_ERROR_OK);
-
-
-	/*GPIO CONFIG*/								assert(xGpioSetConfig(&gpio[PORT_C][PIN_13]) == BSP_ERROR_OK);
-
-	xGpioToggle(&gpio[PORT_C][PIN_13]);
-
-
-	/*GPIO CONFIG*/								assert(xGpioSetConfig(&gpio[PORT_C][PIN_13]) == BSP_ERROR_OK);
-
-	xGpioToggle(&gpio[PORT_C][PIN_13]);
-
-	xTim2_INIT();
-	uint32_t buf[3] = {0x01, 0xD0, 0x31};
-	uint8_t size = 3;
-	uint32_t crc = 0x00;
-	crc = 0x00UL;
-	xCrcCalc(buf, size ,&crc);
-	/* CRC driver Close */						assert(xCrcClose() == BSP_ERROR_OK);
-	while(1) /* Infinite Loop*/
-	{
-
-	}
+    Example_ResetContext();
+    (void)config; // suppress unused warning
+    return EXAMPLE_OK;
 }
+*/
+
+/**
+  * @brief   Periodic update handler.
+  * @details Called periodically to refresh internal state.
+  * @param[in] delta_time_ms  Elapsed time since last call.
+  * @return  None.
+  * @note    Should be called in main loop or from scheduler.
+  */
+/*
+void Example_Update(uint32_t delta_time_ms)
+{
+    (void)delta_time_ms;
+    if (example_state == STATE_IDLE)
+    {
+        example_state = STATE_BUSY;
+    }
+}
+*/
+
 /* End of File */
