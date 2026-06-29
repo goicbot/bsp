@@ -80,9 +80,9 @@ extern "C"
   /* Exported Functions ---------------------------------------------------------*/
   /*******************************************************************************/
   /*--None*/
-  extern BspReturn_t xCrc_OPEN();
-  extern BspReturn_t xCrc_CLOSE();
-  extern BspReturn_t xCrc_CALC(uint32_t *, uint8_t, uint32_t *);
+  extern bspError_t xCrcOpen();
+  extern bspError_t xCrcClose();
+  extern bspError_t xCrcCalc(uint32_t *, uint8_t, uint32_t *);
   /**
    * @}
    */

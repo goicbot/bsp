@@ -71,66 +71,85 @@
 /*******************************************************************************/
 /* Public Function Implementations --------------------------------------------*/
 /*******************************************************************************/
-static void vCrc_RESET(void);
-static void vCrc_DR_WRITE(uint32_t );
-static void xCrc_DR_READ(uint32_t *);
-/*static void vCrc_IDR_WRITE(uint8_t);*/
-/*static void xCrc_IDR_READ(uint8_t *);*/
-BspReturn_t xCrc_OPEN();
-BspReturn_t xCrc_CLOSE();
-static BspReturn_t xCrc_ISOPEN();
-BspReturn_t xCrc_CALC(uint32_t *, uint8_t, uint32_t *);
+/**
+ * @brief Verifies whether the clock control for the CRC module is enabled
+ * @return BSP return result
+ */
+
+bool_t xIsCrcOpen()
+{
+	bool_t  rtnVal = TRUE;
+
+	uint32_t regVal;
+
+	regVal = RCC_READ_AHB1ENR(RCC_AHB1ENR_CRCEN);
+
+	if(!regVal)
+	{
+		rtnVal =  FALSE;
+	}
+
+	return rtnVal;
+}
 
 /**
  * @brief CRC driver CLOSE
  */
-BspReturn_t xCrc_CLOSE()
+bspError_t xCrcClose()
 {
-	BspReturn_t rtnVal = BSP_RETURN_ERROR_CRC;
-	if ( xCrc_ISOPEN() == BSP_RETURN_OK)
+	bspError_t rtnVal = BSP_ERROR_CRC;
+
+	if (xIsCrcOpen())
 	{
 		/* RCC AHB1 peripheral clock enable register */
 		RCC_CLEAR_AHB1ENR(RCC_AHB1ENR_CRCEN);
-		rtnVal =  BSP_RETURN_OK;
+
+		rtnVal =  BSP_ERROR_OK;
 	}
+
 	return rtnVal;
 }
 
 /**
  * @brief CRC driver OPEN
  */
-BspReturn_t xCrc_OPEN()
+bspError_t xCrcOpen()
 {
-	BspReturn_t rtnVal = BSP_RETURN_ERROR_CRC;
-	if ( xCrc_ISOPEN() == BSP_RETURN_ERROR_CRC)
+	bspError_t rtnVal = BSP_ERROR_CRC;
+	if (xIsCrcOpen())
 	{
 		/* RCC AHB1 peripheral clock enable register */
 		RCC_SET_AHB1ENR(RCC_AHB1ENR_CRCEN);
-		rtnVal = BSP_RETURN_OK;
+		rtnVal = BSP_ERROR_OK;
 	}
 	return rtnVal;
 }
 
 /**
- * @brief Verifies whether the clock control for the CRC module is enabled
- * @return BSP return result
+ * @brief Reset the CCR module through the Control Register
  */
-
-BspReturn_t xCrc_ISOPEN()
+static void vCrcReset()
 {
-	BspReturn_t rtnVal = BSP_RETURN_ERROR_CRC;
-
-	uint32_t regVal;
-
-	regVal = RCC_READ_AHB1ENR(RCC_AHB1ENR_CRCEN);
-
-	if(regVal)
-	{
-		rtnVal =  BSP_RETURN_OK;
-	}
-
-	return rtnVal;
+	SET_BIT(CRC->CR,CRC_CR_RESET);
 }
+
+/**
+ * @brief Write data into DR register to calculate the CRC
+ */
+static void vCrcDrWrite(uint32_t data2Write)
+{
+	WRITE_REG(CRC->DR,data2Write);
+}
+
+/**
+ * @brief Read data from DR register with the calculated CRC
+ */
+static void vCrcDrRead(uint32_t *p_data2Read)
+{
+
+  *p_data2Read = READ_REG(CRC->DR);
+}
+
 
 /**
  * @brief Calculates the CCR
@@ -140,69 +159,50 @@ BspReturn_t xCrc_ISOPEN()
  * @param[in] p_crc Holds the CRC result
  * @return BSP return result
  */
-BspReturn_t xCrc_CALC(uint32_t *p_buf, uint8_t size, uint32_t *p_crc)
+bspError_t xCrcCalc(uint32_t *p_buf, uint8_t size, uint32_t *p_crc)
 {
-	BspReturn_t rtnVal = BSP_RETURN_OK;
-	if ( xCrc_ISOPEN() == BSP_RETURN_ERROR_CRC || p_buf == NULL ||  size == 0x00UL || p_crc == NULL)
+	bspError_t rtnVal = BSP_ERROR_OK;
+
+	if (!(xIsCrcOpen() || p_buf == NULL ||  size == 0U || p_crc == NULL))
 	{
-	*p_crc = CRC_CR_RESET;
-	rtnVal = BSP_RETURN_ERROR_CRC;
+		/* Reset CRC */
+		vCrcReset();
+
+		for (uint8_t idx = 0; idx < size; idx++)
+		{
+			vCrcDrWrite(p_buf[idx]);
+		}
+
+		vCrcDrRead(p_crc);
 	}
-
-	/* Reset CRC */
-	vCrc_RESET();
-
-	for (uint8_t idx = 0; idx < size; idx++)
+	else
 	{
-		vCrc_DR_WRITE(p_buf[idx]);
-	}
+		*p_crc = CRC_CR_RESET;
 
-	xCrc_DR_READ(p_crc);
+		rtnVal = BSP_ERROR_CRC;
+	}
 
 	return rtnVal;
 }
 
-/**
- * @brief Reset the CCR module through the Control Register
- */
-static void vCrc_RESET()
-{
-	SET_BIT(CRC->CR,CRC_CR_RESET);
-}
 
-/**
- * @brief Write data into DR register to calculate the CRC
- */
-static void vCrc_DR_WRITE(uint32_t data2Write)
-{
-	WRITE_REG(CRC->DR,data2Write);
-}
-
-/**
- * @brief Read data from DR register with the calculated CRC
- */
-static void xCrc_DR_READ(uint32_t *p_data2Read)
-{
-
-  *p_data2Read = READ_REG(CRC->DR);
-}
-
+#if 0
 /**
  * @brief Write data into IDR General Purpose register
  */
-/*static void vCrc_IDR_WRITE( uint8_t data2Write){
+static void vCrcIdrWrite( uint8_t data2Write){
 
   WRITE_REG(CRC->IDR,data2Write);
 
-}*/
+}
 
 /**
  * @brief Read data from IDR register general purpose
  */
-/*static	void xCrc_IDR_READ(uint8_t *p_data2Read){
+static	void vCrcIdrRead(uint8_t *p_data2Read){
 
   *p_data2Read = READ_REG(CRC->IDR);
 
-}*/
-
+}
+#endif
 /* End of File */
