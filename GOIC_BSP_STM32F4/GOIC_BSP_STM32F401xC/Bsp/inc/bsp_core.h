@@ -52,19 +52,45 @@ extern "C"
   /* Includes -------------------------------------------------------------------*/
   /*******************************************************************************/
 
-  /*None ---*/
+#include <stdint.h>
 
   /*******************************************************************************/
   /* Exported Types -------------------------------------------------------------*/
   /*******************************************************************************/
 
+/*
+ * @def bool_t
+ * @brief Boolean type defined in the Board Support Package
+ */
+typedef enum
+{
+	FALSE = 0x0,
+	TRUE = 0x1,
+}bool_t;
+
+/*
+ * @brief Handle general BSP errors
+ */
   typedef enum
   {
-    BSP_RETURN_OK = 0,
-    BSP_RETURN_NOK = 0,
-    BSP_RETURN_ERROR_CRC,
-    BSP_RETURN_ERROR_GPIO,
-  } BspReturn_t;
+    BSP_ERROR_OK = 0,
+    BSP_ERROR_NOK,
+    BSP_ERROR_CRC,
+    BSP_ERROR_GPIO,
+	BSP_ERROR_ENUM_MAX,
+  } bspError_t;
+
+  /*
+   * @brief Checks that the enum value is within range
+   */
+  static inline bool_t xIsBspErrorInRange(bspError_t err)
+  {
+	  bool_t out = FALSE;
+
+	  if(err < BSP_ERROR_ENUM_MAX) out = TRUE;
+
+	  return out;
+  }
 
   /*******************************************************************************/
   /* Exported Constants ---------------------------------------------------------*/
