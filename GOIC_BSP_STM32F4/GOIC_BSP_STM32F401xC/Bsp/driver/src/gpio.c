@@ -67,30 +67,8 @@ GpioConfig_t gpio[GPIO_PORT_MAX][GPIO_PIN_MAX];
 /*******************************************************************************/
 /* Private Function Prototypes ------------------------------------------------*/
 /*******************************************************************************/
-static BspReturn_t xPORT_CHECK_ADDRS_IN_RANGE(GPIO_TypeDef *);
-static BspReturn_t xPORT_AFR(GpioPinLabel_t , GpioPortLabel_t, GpioAltFunc_t);
-static BspReturn_t xPORT_BSRR(GpioPinLabel_t ,GpioPortLabel_t , GpioState_t);
-#ifdef GPIO_ODR_FUNC
-static BspReturn_t xGpio_ODR(GpioPinLabel_t ,GpioPortLabel_t  , GpioState_t );
-#endif
-static BspReturn_t xGpio_IDR(GpioPinLabel_t ,GpioPortLabel_t  , GpioState_t *);
-static BspReturn_t xGpio_PUPDR(GpioPinLabel_t ,GpioPortLabel_t , GpioPupdr_t);
-static BspReturn_t xGpio_OSPEEDR(GpioPinLabel_t ,GpioPortLabel_t , GpioOutputSpeed_t);
-static BspReturn_t xGpio_OTYPER(GpioPinLabel_t ,GpioPortLabel_t , GpioOutputType_t);
-static BspReturn_t xGpio_MODE(GpioPinLabel_t, GpioPortLabel_t ,GpioPortMode_t);
-static GPIO_TypeDef *xGpio_PORTADDRESS(GpioPortLabel_t );
-static BspReturn_t xGpio_ISOPEN(GpioPortLabel_t );
-static void vGpio_INIT_CONFIG();
-BspReturn_t xGpio_LCKR(GpioPortLabel_t);
-BspReturn_t xPORT_CONFIG(GpioConfig_t *);
-BspReturn_t xGpio_WRITE(GpioConfig_t *, GpioState_t);
-BspReturn_t xGpio_READ(GpioConfig_t *, GpioState_t *);
-BspReturn_t xGpio_TOGGLE(GpioConfig_t *);
-static BspReturn_t xGpio_OPEN(GpioPortLabel_t);
-static BspReturn_t xPORT_CLOSE(GpioPortLabel_t);
-BspReturn_t xGpio_RESET(GpioPortLabel_t );
-BspReturn_t xGpio_INIT();
-BspReturn_t xPORT_END();
+
+/* None---*/
 
 /*******************************************************************************/
 /* Private Function Implementations -------------------------------------------*/
@@ -99,21 +77,21 @@ BspReturn_t xPORT_END();
 /**
   * @brief   Checks the pointer address .
   * @param[in] GPIOx pointer address (@see GPIO_TypeDef)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xPORT_CHECK_ADDRS_IN_RANGE(GPIO_TypeDef *gpio)
+static bspError_t xPortAddssCtrl(GPIO_TypeDef *gpio)
 {
 	uintptr_t addrs = (uintptr_t) gpio;
 	if(gpio == NULL)
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 	else if(addrs <= GPIOH_BASE && addrs >= GPIOA_BASE)
 	{
-		return BSP_RETURN_OK;
+		return BSP_ERROR_OK;
 	}
-	return BSP_RETURN_ERROR_GPIO;
+	return BSP_ERROR_GPIO;
 }
 
 /**
@@ -122,7 +100,7 @@ static BspReturn_t xPORT_CHECK_ADDRS_IN_RANGE(GPIO_TypeDef *gpio)
   * @return  GPIOx pointer address (@see GPIO_TypeDef)
   * @note    Private function
   */
-static GPIO_TypeDef *xGpio_PORTADDRESS(GpioPortLabel_t port)
+static GPIO_TypeDef *xGetPortAddrss(GpioPortLabel_t port)
 {
 	switch (port)
 		{
@@ -143,26 +121,26 @@ static GPIO_TypeDef *xGpio_PORTADDRESS(GpioPortLabel_t port)
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] mode  Mode label (@see GpioPortMode_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xGpio_MODE(GpioPinLabel_t pin, GpioPortLabel_t port ,GpioPortMode_t mode)
+static bspError_t xGpioMode(GpioPinLabel_t pin, GpioPortLabel_t port ,GpioPortMode_t mode)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin) || GPIO_MODE_ENUM_CTRL(mode))
+	if(xIsGpioPinOutRange(pin) || xIsGpioModeOutRange(mode))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	MODIFY_REG(p_GPIOx->MODER,( 0x3UL << 2UL*pin),((uint32_t) mode << 2UL*pin));
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
@@ -171,25 +149,25 @@ static BspReturn_t xGpio_MODE(GpioPinLabel_t pin, GpioPortLabel_t port ,GpioPort
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] mode  Mode label (@see GpioPortMode_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xGpio_OTYPER(GpioPinLabel_t pin,GpioPortLabel_t port , GpioOutputType_t type)
+static bspError_t xGpioOTyper(GpioPinLabel_t pin,GpioPortLabel_t port , GpioOutputType_t type)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin) || GPIO_OUTTYPE_ENUM_CTRL(type))
+	if(xIsGpioPinOutRange(pin) || xIsGpioOutTypeOutRange(type))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	MODIFY_REG(p_GPIOx->OTYPER,(0x1UL << pin),((uint32_t) type << pin));
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
@@ -198,25 +176,25 @@ static BspReturn_t xGpio_OTYPER(GpioPinLabel_t pin,GpioPortLabel_t port , GpioOu
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] speed  speed type (@see GpioOutputSpeed_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xGpio_OSPEEDR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioOutputSpeed_t speed)
+static bspError_t xGpioOSpeedR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioOutputSpeed_t speed)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin) || GPIO_SPEED_ENUM_CTRL(speed))
+	if(xIsGpioPinOutRange(pin) || xIsGpioSpeedOutRange(speed))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	MODIFY_REG(p_GPIOx->OSPEEDR,(0x3UL << 2U*pin),((uint32_t) speed << 2U*pin));
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
@@ -225,25 +203,25 @@ static BspReturn_t xGpio_OSPEEDR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioO
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] pupdr  Type (@see GpioPupdr_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xGpio_PUPDR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioPupdr_t pupdr)
+static bspError_t xGpioPuPdr(GpioPinLabel_t pin,GpioPortLabel_t port , GpioPupdr_t pupdr)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin) || GPIO_PUPDR_ENUM_CTRL(pupdr))
+	if(xIsGpioPinOutRange(pin) || xIsGpioPuPdrOutRange(pupdr))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	MODIFY_REG(p_GPIOx->PUPDR,(0x3UL << 2U*pin),((uint32_t) pupdr << 2U*pin));
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
@@ -251,56 +229,56 @@ static BspReturn_t xGpio_PUPDR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioPup
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] *p_getState  Pointer to variable holding the current (pin,port) state value (@see GpioState_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xGpio_IDR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState_t *p_getState)
+static bspError_t xGpioIdr(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState_t *p_getState)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin))
+	if(xIsGpioPinOutRange(pin))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	/*Read port pin value*/
 	*p_getState = (GpioState_t) (READ_BIT(p_GPIOx->IDR, 0x1UL << pin) >> pin);
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 #ifdef GPIO_ODR_FUNC
 /**
   * @brief   Sets the ODR register
-  * @details This function is hidden since is not used. For atomic set/reset (pin,port) GPIO state @ref xPORT_BSRR
+  * @details This function is hidden since is not used. For atomic set/reset (pin,port) GPIO state @ref xGpioBsRr
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] setState  Current (pin,port) value to be written (@see GpioState_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xGpio_ODR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState_t setState)
+static bspError_t xGpioOdr(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState_t setState)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin) || GPIO_STATE_ENUM_CTRL(setState))
+	if(xIsGpioPinOutRange(pin) || xIsGpioStateOutRange(setState))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 
 	MODIFY_REG(p_GPIOx->ODR,(0x1UL << pin),((uint32_t)setState << pin));
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 #endif
 
@@ -310,20 +288,20 @@ static BspReturn_t xGpio_ODR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] setState  Current (pin,port) value to be written (@see GpioState_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xPORT_BSRR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState_t setState)
+static bspError_t xGpioBsRr(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState_t setState)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin) || GPIO_STATE_ENUM_CTRL(setState))
+	if(xIsGpioPinOutRange(pin) || xIsGpioStateOutRange(setState))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	if(setState == PORT_HIGH)
@@ -335,7 +313,7 @@ static BspReturn_t xPORT_BSRR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioStat
 		WRITE_REG(p_GPIOx->BSRR, (0x1UL << (pin + 16)));
 	}
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
@@ -344,21 +322,21 @@ static BspReturn_t xPORT_BSRR(GpioPinLabel_t pin,GpioPortLabel_t port , GpioStat
   * @param[in] pin   Pin label (@see GpioPinLabel_t)
   * @param[in] port  Port label (@see GpioPortLabel_t)
   * @param[in] altFunc  Alternate functions (@see GpioAltFunc_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Private function
   */
-static BspReturn_t xPORT_AFR(GpioPinLabel_t pin, GpioPortLabel_t port, GpioAltFunc_t altFunc)
+static bspError_t xGpioAfr(GpioPinLabel_t pin, GpioPortLabel_t port, GpioAltFunc_t altFunc)
 {
-	if(GPIO_PIN_ENUM_CTRL(pin) || PORT_AF_ENUM_CTRL(altFunc))
+	if(xIsGpioPinOutRange(pin) || xIsGpioAltFunOutRange(altFunc))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	if(pin < PIN_8)
@@ -370,19 +348,22 @@ static BspReturn_t xPORT_AFR(GpioPinLabel_t pin, GpioPortLabel_t port, GpioAltFu
 		MODIFY_REG(p_GPIOx->AFR[1],(0xFUL << 4UL*pin),((uint32_t) altFunc << 4UL*pin));
 	}
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 
 /**
   * @brief   Evaluates whether the RCC (@see RCC_TypeDef) for the GPIOx peripheral is enabled or disabled.
   * @param[in] port  Port label (@see GpioPortLabel_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Boolean False or True (@see bool_t)
   * @note    Private function
   */
-static BspReturn_t xGpio_ISOPEN(GpioPortLabel_t port)
+static bool_t xIsGpioOpen(GpioPortLabel_t port)
 {
+	bool_t rtn = FALSE;
+
 	uint32_t bit;
+
 	switch(port)
 	{
 		case PORT_A:
@@ -416,21 +397,20 @@ static BspReturn_t xGpio_ISOPEN(GpioPortLabel_t port)
 		}
 		break;
 		default:
-			return BSP_RETURN_ERROR_GPIO;
+		break;
 
 	}
 
-	if(bit)
-		return BSP_RETURN_OK;
-	else
-		return BSP_RETURN_NOK;
+	if(bit)	rtn = TRUE;
+
+	return rtn;
 }
 
 /**
-  * @brief   Initialization GPIO global variable.
+  * @brief   Default initialization of the GPIO global variable (@see gpio).
   * @note    Private function
   */
-static void vGpio_INIT_CONFIG()
+static void vGpioDefaultConfig()
 {
 
 	GpioPortLabel_t portIdx;
@@ -467,17 +447,17 @@ static void vGpio_INIT_CONFIG()
   * Double read instructions should be done to assess the correct LOCK write sequence
   *
   * @param[in] port  Port label (@see GpioPortLabel_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   * @warning This function performs a Lock sequence for the entire set of pins of a port "x"
   */
-BspReturn_t xGpio_LCKR(GpioPortLabel_t port)
+bspError_t xGpioLCKR(GpioPortLabel_t port)
 {
-	GPIO_TypeDef *p_GPIOx = xGpio_PORTADDRESS(port);
+	GPIO_TypeDef *p_GPIOx = xGetPortAddrss(port);
 
-	if(xPORT_CHECK_ADDRS_IN_RANGE(p_GPIOx ))
+	if(xPortAddssCtrl(p_GPIOx ))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	/*LOCK sequence*/
@@ -492,82 +472,85 @@ BspReturn_t xGpio_LCKR(GpioPortLabel_t port)
 
 	if(!rControl)
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
   * @brief   Enabling of the RCC corresponding to the GPIOx peripheral
   * @param[in] port  Port label (@see GpioPortLabel_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-static BspReturn_t xGpio_OPEN(GpioPortLabel_t port)
+static bspError_t xGpioOpen(GpioPortLabel_t port)
 {
-	if(GPIO_PORT_ENUM_CTRL(port))
-	{
-		return BSP_RETURN_ERROR_GPIO;
-	}
+	bspError_t err = BSP_ERROR_OK;
 
-
-	if (xGpio_ISOPEN(port) == BSP_RETURN_NOK)
+	if(xIsGpioPortOutRange(port))
 	{
-		switch(port)
+		if (xIsGpioOpen(port))
 		{
-			case PORT_A:
+			switch(port)
 			{
-				RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOAEN);
+				case PORT_A:
+				{
+					RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOAEN);
+				}
+				break;
+				case PORT_B:
+				{
+					RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOBEN);
+				}
+				break;
+				case PORT_C:
+				{
+					RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOCEN);
+				}
+				break;
+				case PORT_D:
+				{
+					RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIODEN);
+				}
+				break;
+				case PORT_E:
+				{
+					RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOEEN);
+				}
+				break;
+				case PORT_H:
+				{
+					RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOHEN);
+				}
+				break;
+				default:
+					err = BSP_ERROR_GPIO;
 			}
-			break;
-			case PORT_B:
-			{
-				RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOBEN);
-			}
-			break;
-			case PORT_C:
-			{
-				RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOCEN);
-			}
-			break;
-			case PORT_D:
-			{
-				RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIODEN);
-			}
-			break;
-			case PORT_E:
-			{
-				RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOEEN);
-			}
-			break;
-			case PORT_H:
-			{
-				RCC_SET_AHB1ENR(RCC_AHB1ENR_GPIOHEN);
-			}
-			break;
-			default:
-				return BSP_RETURN_ERROR_CRC;
 		}
 	}
-	return BSP_RETURN_OK;
+	else
+	{
+		err =  BSP_ERROR_GPIO;
+	}
+	return err;
 }
 
 /**
   * @brief   Disabling of the RCC corresponding to the GPIOx peripheral
   * @param[in] port  Port label (@see GpioPortLabel_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-static BspReturn_t xPORT_CLOSE(GpioPortLabel_t port)
+static bspError_t xGpioClose(GpioPortLabel_t port)
 {
-	if(GPIO_PORT_ENUM_CTRL(port))
+	if(xIsGpioPortOutRange(port))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 
-	if (xGpio_ISOPEN(port) == BSP_RETURN_OK)
+	if (xIsGpioOpen(port))
 	{
 		switch(port)
 		{
@@ -602,23 +585,23 @@ static BspReturn_t xPORT_CLOSE(GpioPortLabel_t port)
 			}
 			break;
 			default:
-				return BSP_RETURN_ERROR_CRC;
+				return BSP_ERROR_CRC;
 		}
 	}
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
   * @brief   Reset of the RCC corresponding to the GPIOx peripheral
   * @param[in] port  Port label (@see GpioPortLabel_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-BspReturn_t xGpio_RESET(GpioPortLabel_t port)
+bspError_t xGpioReset(GpioPortLabel_t port)
 {
-	if(GPIO_PORT_ENUM_CTRL(port))
+	if(xIsGpioPortOutRange(port))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	switch(port)
@@ -654,188 +637,187 @@ BspReturn_t xGpio_RESET(GpioPortLabel_t port)
 		}
 		break;
 		default:
-			return BSP_RETURN_ERROR_CRC;
+			return BSP_ERROR_CRC;
 	}
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
   * @brief   Configures the GPIOx pin
   * @param[in] p_config  GPIOx pin configuration (@see GpioConfig_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-BspReturn_t xPORT_CONFIG(GpioConfig_t *p_config)
+bspError_t xGpioSetConfig(GpioConfig_t *p_config)
 {
-	if(xGpio_MODE(p_config->pin,p_config->port, p_config->mode))
+	if(xGpioMode(p_config->pin,p_config->port, p_config->mode))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	if(xGpio_OTYPER(p_config->pin,p_config->port, p_config->type))
+	if(xGpioOTyper(p_config->pin,p_config->port, p_config->type))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	if(xGpio_OSPEEDR(p_config->pin,p_config->port, p_config->speed))
+	if(xGpioOSpeedR(p_config->pin,p_config->port, p_config->speed))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	if(xGpio_PUPDR(p_config->pin,p_config->port, p_config->pupdr))
+	if(xGpioPuPdr(p_config->pin,p_config->port, p_config->pupdr))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	if(xPORT_AFR(p_config->pin,p_config->port, p_config->altFunc))
+	if(xGpioAfr(p_config->pin,p_config->port, p_config->altFunc))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
   * @brief   Writes the state of a GPIOx pin
   * @param[in] p_config  GPIOx pin configuration (@see GpioConfig_t)
   * @param[in] state  Current (pin,port) value to be written (@see GpioState_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-BspReturn_t xGpio_WRITE(GpioConfig_t *p_config, GpioState_t state)
+bspError_t xGpioWrite(GpioConfig_t *p_config, GpioState_t state)
 {
-	if(xPORT_BSRR(p_config->pin,p_config->port, state))
+	if(xGpioBsRr(p_config->pin,p_config->port, state))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
   * @brief   Reads the state of a GPIOx pin
   * @param[in] p_config  GPIOx pin configuration (@see GpioConfig_t)
   * @param[in] p_state  Holds the read value (@see GpioState_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-BspReturn_t xGpio_READ(GpioConfig_t *p_config, GpioState_t *p_state)
+bspError_t xGpioRead(GpioConfig_t *p_config, GpioState_t *p_state)
 {
-	if(xGpio_IDR(p_config->pin,p_config->port, p_state))
+	if(xGpioIdr(p_config->pin,p_config->port, p_state))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
-	return BSP_RETURN_OK;
+	return BSP_ERROR_OK;
 }
 
 /**
   * @brief   Toggles the state of a GPIOx pin
   * @param[in] p_config  GPIOx pin configuration (@see GpioConfig_t)
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-BspReturn_t xGpio_TOGGLE(GpioConfig_t *p_config)
+bspError_t xGpioToggle(GpioConfig_t *p_config)
 {
 	GpioState_t state;
-	if(xGpio_IDR(p_config->pin,p_config->port, &state))
+	if(xGpioIdr(p_config->pin,p_config->port, &state))
 	{
-		return BSP_RETURN_ERROR_GPIO;
+		return BSP_ERROR_GPIO;
 	}
 
 	if(state == PORT_HIGH)
-		return xGpio_WRITE(p_config,GPIO_LOW);
+		return xGpioWrite(p_config,GPIO_LOW);
 	else
-		return xGpio_WRITE(p_config,PORT_HIGH);
+		return xGpioWrite(p_config,PORT_HIGH);
 }
 
 
 /**
   * @brief   Initializes all the GPIO ports work
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-BspReturn_t xGpio_INIT()
+bspError_t xGpioInit()
 {
-	BspReturn_t retnVal = BSP_RETURN_OK;
+	bspError_t err = BSP_ERROR_OK;
+
 	/* GPIO A driver Open*/
-	if(xGpio_OPEN(PORT_A))
+	if(xGpioOpen(PORT_A))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO B driver Open*/
-	else if(xGpio_OPEN(PORT_B))
+	else if(xGpioOpen(PORT_B))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO C driver Open*/
-	else if(xGpio_OPEN(PORT_C))
+	else if(xGpioOpen(PORT_C))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO D driver Open*/
-	else if(xGpio_OPEN(PORT_D))
+	else if(xGpioOpen(PORT_D))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO E driver Open*/
-	else if(xGpio_OPEN(PORT_E))
+	else if(xGpioOpen(PORT_E))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO H driver Open*/
-	else if(xGpio_OPEN(PORT_H))
+	else if(xGpioOpen(PORT_H))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
-	}
-	else
-	{
-		vGpio_INIT_CONFIG();
+		err = BSP_ERROR_GPIO;
 	}
 
-	return retnVal;
+	vGpioDefaultConfig();
+
+	return err;
 }
 
 /**
   * @brief   Stops all the GPIO ports work
-  * @return  Board Support Package error handling (@see BspReturn_t)
+  * @return  Board Support Package error handling (@see bspError_t)
   * @note    Public function
   */
-BspReturn_t xPORT_END()
+bspError_t xGpioEnd()
 {
-	BspReturn_t retnVal = BSP_RETURN_OK;
+	bspError_t err = BSP_ERROR_OK;
 	/* GPIO A driver Close*/
-	if(xPORT_CLOSE(PORT_A))
+	if(xGpioClose(PORT_A))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO B driver Close*/
-	else if(xPORT_CLOSE(PORT_B))
+	else if(xGpioClose(PORT_B))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO C driver Close*/
-	else if(xPORT_CLOSE(PORT_C))
+	else if(xGpioClose(PORT_C))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO D driver Close*/
-	else if(xPORT_CLOSE(PORT_D))
+	else if(xGpioClose(PORT_D))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO E driver Close*/
-	else if(xPORT_CLOSE(PORT_E))
+	else if(xGpioClose(PORT_E))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 	/* GPIO H driver Close*/
-	else if(xPORT_CLOSE(PORT_H))
+	else if(xGpioClose(PORT_H))
 	{
-		retnVal = BSP_RETURN_ERROR_GPIO;
+		err = BSP_ERROR_GPIO;
 	}
 
-	return retnVal;
+	return err;
 }
 /* End of File */

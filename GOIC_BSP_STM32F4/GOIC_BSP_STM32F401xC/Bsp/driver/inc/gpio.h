@@ -71,13 +71,15 @@ typedef enum{
 /*
  * @brief Control of GpioPortMode_t type input into range
  */
-static inline uint32_t GPIO_MODE_ENUM_CTRL(GpioPortMode_t mode)
+static inline bool_t xIsGpioModeOutRange(GpioPortMode_t mode)
 {
-	if(mode >= GPIO_MAX_MODE)
+	bool_t check = TRUE;
+
+	if(mode < GPIO_MAX_MODE)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
 }
 
 /**
@@ -96,13 +98,15 @@ typedef enum{
 /*
  * @brief Control of GpioPortLabel_t type input into range
  */
-static inline uint32_t GPIO_PORT_ENUM_CTRL(GpioPortLabel_t port)
+static inline bool_t xIsGpioPortOutRange(GpioPortLabel_t port)
 {
-	if(port >= GPIO_PORT_MAX)
+	bool_t check = TRUE;
+
+	if(port < GPIO_PORT_MAX)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
 }
 
 /**
@@ -132,13 +136,16 @@ typedef enum{
 /*
  * @brief Control of GpioPinLabel_t type input into range
  */
-static inline uint32_t GPIO_PIN_ENUM_CTRL(GpioPinLabel_t pin)
+static inline bool_t xIsGpioPinOutRange(GpioPinLabel_t pin)
 {
-	if(pin >= GPIO_PIN_MAX)
+	bool_t check = TRUE;
+
+	if(pin < GPIO_PIN_MAX)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
+
 }
 
 /**
@@ -154,13 +161,16 @@ typedef enum{
 /*
  * @brief Control of GpioOutputType_t type input into range
  */
-static inline uint32_t GPIO_OUTTYPE_ENUM_CTRL(GpioOutputType_t outtype)
+static inline bool_t xIsGpioOutTypeOutRange(GpioOutputType_t outtype)
 {
-	if(outtype >= GPIO_MAX_OUTPUT_TYPE)
+	bool_t check = TRUE;
+
+	if(outtype < GPIO_MAX_OUTPUT_TYPE)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
+
 }
 
 /**
@@ -178,13 +188,15 @@ typedef enum{
 /*
  * @brief Control of GpioOutputSpeed_t type input into range
  */
-static inline uint32_t GPIO_SPEED_ENUM_CTRL(GpioOutputSpeed_t speed)
+static inline bool_t xIsGpioSpeedOutRange(GpioOutputSpeed_t speed)
 {
-	if(speed >= GPIO_OUTPUT_SPEED_MAX)
+	bool_t check = TRUE;
+
+	if(speed < GPIO_OUTPUT_SPEED_MAX)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
 }
 
 /**
@@ -201,13 +213,15 @@ typedef enum{
 /*
  * @brief Control of GpioPupdr_t type input into range
  */
-static inline uint32_t GPIO_PUPDR_ENUM_CTRL(GpioPupdr_t pudpr)
+static inline bool_t xIsGpioPuPdrOutRange(GpioPupdr_t pudpr)
 {
-	if(pudpr >= GPIO_PUPDR_MAX )
+	bool_t check = TRUE;
+
+	if(pudpr < GPIO_PUPDR_MAX)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
 }
 
 /**
@@ -223,13 +237,15 @@ typedef enum{
 /*
  * @brief Control of GpioState_t type input into range
  */
-static inline uint32_t GPIO_STATE_ENUM_CTRL(GpioState_t state)
+static inline bool_t xIsGpioStateOutRange(GpioState_t state)
 {
-	if(state >= GPIO_STATE_MAX)
+	bool_t check = TRUE;
+
+	if(state < GPIO_STATE_MAX)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
 }
 
 /**
@@ -259,13 +275,15 @@ typedef enum{
 /*
  * @brief Control of GpioAltFunc_t type input into range
  */
-static inline uint32_t PORT_AF_ENUM_CTRL(GpioAltFunc_t af)
+static inline bool_t xIsGpioAltFunOutRange(GpioAltFunc_t af)
 {
-	if(af >= PORT_AF_MAX)
+	bool_t check = TRUE;
+
+	if(af < PORT_AF_MAX)
 	{
-		return 0x01UL;
+		check = FALSE;
 	}
-	return 0x00UL;
+	return check;
 }
 
 /*
@@ -279,7 +297,6 @@ typedef struct{
 	GpioOutputSpeed_t 	speed;
 	GpioPupdr_t			pupdr;
 	GpioAltFunc_t		altFunc;
-
 }GpioConfig_t;
 
 
@@ -302,14 +319,14 @@ extern GpioConfig_t gpio[GPIO_PORT_MAX][GPIO_PIN_MAX];
 /* Exported Functions ---------------------------------------------------------*/
 /*******************************************************************************/
 
-extern BspReturn_t xGpio_LCKR(GpioPortLabel_t);
-extern BspReturn_t xPORT_CONFIG(GpioConfig_t *);
-extern BspReturn_t xGpio_WRITE(GpioConfig_t *, GpioState_t);
-extern BspReturn_t xGpio_READ(GpioConfig_t *, GpioState_t *);
-extern BspReturn_t xGpio_RESET(GpioPortLabel_t);
-extern BspReturn_t xGpio_TOGGLE(GpioConfig_t *);
-extern BspReturn_t xGpio_INIT();
-extern BspReturn_t xPORT_END();
+extern bspError_t xGpioLock(GpioPortLabel_t);
+extern bspError_t xGpioSetConfig(GpioConfig_t *);
+extern bspError_t xGpioWrite(GpioConfig_t *, GpioState_t);
+extern bspError_t xGpioRead(GpioConfig_t *, GpioState_t *);
+extern bspError_t xGpioReset(GpioPortLabel_t);
+extern bspError_t xGpioToggle(GpioConfig_t *);
+extern bspError_t xGpioInit();
+extern bspError_t xGpioEnd();
 /**
   * @}
   */
