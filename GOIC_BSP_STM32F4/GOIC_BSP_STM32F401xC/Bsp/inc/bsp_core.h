@@ -77,6 +77,7 @@ typedef enum
     BSP_ERROR_NOK,
     BSP_ERROR_CRC,
     BSP_ERROR_GPIO,
+    BSP_ERROR_TIM,
 	BSP_ERROR_ENUM_MAX,
   } bspError_t;
 

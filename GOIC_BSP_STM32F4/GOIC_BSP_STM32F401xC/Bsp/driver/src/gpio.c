@@ -304,7 +304,7 @@ static bspError_t xGpioBsRr(GpioPinLabel_t pin,GpioPortLabel_t port , GpioState_
 		return BSP_ERROR_GPIO;
 	}
 
-	if(setState == PORT_HIGH)
+	if(setState == GPIO_HIGH)
 	{
 		WRITE_REG(p_GPIOx->BSRR, (0x1UL << pin));
 	}
@@ -401,7 +401,7 @@ static bool_t xIsGpioOpen(GpioPortLabel_t port)
 
 	}
 
-	if(bit)	rtn = TRUE;
+	if(!bit)	rtn = TRUE;
 
 	return rtn;
 }
@@ -424,7 +424,7 @@ static void vGpioDefaultConfig()
 			gpio[portIdx][pinIdx].port = portIdx;
 			gpio[portIdx][pinIdx].mode = GPIO_OUTPUT_MODE;
 			gpio[portIdx][pinIdx].type = GPIO_PUSH_PULL;
-			gpio[portIdx][pinIdx].speed = PORT_HIGH_SPEED;
+			gpio[portIdx][pinIdx].speed = GPIO_HIGH_SPEED;
 			gpio[portIdx][pinIdx].pupdr = GPIO_PULL_UP;
 			gpio[portIdx][pinIdx].altFunc = PORT_AF0;
 		}
@@ -488,7 +488,7 @@ static bspError_t xGpioOpen(GpioPortLabel_t port)
 {
 	bspError_t err = BSP_ERROR_OK;
 
-	if(xIsGpioPortOutRange(port))
+	if(!xIsGpioPortOutRange(port))
 	{
 		if (xIsGpioOpen(port))
 		{
@@ -544,7 +544,7 @@ static bspError_t xGpioOpen(GpioPortLabel_t port)
   */
 static bspError_t xGpioClose(GpioPortLabel_t port)
 {
-	if(xIsGpioPortOutRange(port))
+	if(!xIsGpioPortOutRange(port))
 	{
 		return BSP_ERROR_GPIO;
 	}
@@ -599,7 +599,7 @@ static bspError_t xGpioClose(GpioPortLabel_t port)
   */
 bspError_t xGpioReset(GpioPortLabel_t port)
 {
-	if(xIsGpioPortOutRange(port))
+	if(!xIsGpioPortOutRange(port))
 	{
 		return BSP_ERROR_GPIO;
 	}
@@ -727,10 +727,10 @@ bspError_t xGpioToggle(GpioConfig_t *p_config)
 		return BSP_ERROR_GPIO;
 	}
 
-	if(state == PORT_HIGH)
+	if(state == GPIO_HIGH)
 		return xGpioWrite(p_config,GPIO_LOW);
 	else
-		return xGpioWrite(p_config,PORT_HIGH);
+		return xGpioWrite(p_config,GPIO_HIGH);
 }
 
 

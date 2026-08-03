@@ -84,7 +84,7 @@ bool_t xIsCrcOpen()
 
 	regVal = RCC_READ_AHB1ENR(RCC_AHB1ENR_CRCEN);
 
-	if(!regVal)
+	if(regVal)
 	{
 		rtnVal =  FALSE;
 	}
@@ -99,7 +99,7 @@ bspError_t xCrcClose()
 {
 	bspError_t rtnVal = BSP_ERROR_CRC;
 
-	if (xIsCrcOpen())
+	if (!xIsCrcOpen())
 	{
 		/* RCC AHB1 peripheral clock enable register */
 		RCC_CLEAR_AHB1ENR(RCC_AHB1ENR_CRCEN);

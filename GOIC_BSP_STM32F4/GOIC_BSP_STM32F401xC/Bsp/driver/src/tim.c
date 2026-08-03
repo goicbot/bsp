@@ -37,7 +37,9 @@
 /* Includes -------------------------------------------------------------------*/
 /*******************************************************************************/
 
+#include "stm32f4xx.h"
 #include "tim.h"
+#include "rcc.h"
 
 /*******************************************************************************/
 /* Private Define -------------------------------------------------------------*/
@@ -49,89 +51,68 @@
 /* Private Typedef ------------------------------------------------------------*/
 /*******************************************************************************/
 /*--None*/
-/**
-  * @brief Internal state enumeration.
-  */
-/*
-typedef enum
-{
-    STATE_IDLE = 0U,
-    STATE_BUSY,
-    STATE_ERROR
-} ExampleState_t;
-*/
 
 /*******************************************************************************/
 /* Private Variables ----------------------------------------------------------*/
 /*******************************************************************************/
 /*--None*/
-/**
-  * @brief Internal context variable.
-  */
-/* static ExampleState_t example_state = STATE_IDLE; */
 
 /*******************************************************************************/
 /* Private Function Prototypes ------------------------------------------------*/
 /*******************************************************************************/
 /*--None*/
-/**
-  * @brief   Initializes the internal context.
-  * @details This helper function resets internal variables.
-  */
-/* static void Example_ResetContext(void); */
 
 /*******************************************************************************/
 /* Private Function Implementations -------------------------------------------*/
 /*******************************************************************************/
 /*--None*/
-/**
-  * @brief   Initializes internal context variables.
-  * @details This function is used internally by @ref Example_Init.
-  */
-/*
-static void Example_ResetContext(void)
-{
-    example_state = STATE_IDLE;
-}
-*/
 
 /*******************************************************************************/
 /* Public Function Implementations --------------------------------------------*/
 /*******************************************************************************/
-/*--None*/
-/**
-  * @brief   Initializes the module.
-  * @details Configures internal state and prepares the driver.
-  * @param[in] config  Pointer to configuration structure.
-  * @return  Operation status.
-  * @pre     Must be called before Example_Update().
-  * @note    Thread-safe if called only during initialization phase.
-  */
-/*
-ExampleStatus_t Example_Init(const ExampleConfig_t *config)
-{
-    Example_ResetContext();
-    (void)config; // suppress unused warning
-    return EXAMPLE_OK;
-}
-*/
 
-/**
-  * @brief   Periodic update handler.
-  * @details Called periodically to refresh internal state.
-  * @param[in] delta_time_ms  Elapsed time since last call.
-  * @return  None.
-  * @note    Should be called in main loop or from scheduler.
-  */
-/*
-void Example_Update(uint32_t delta_time_ms)
+
+void vTim1BasicTimer(uint16_t psc, uint16_t arr, uint8_t rcr)
 {
-    (void)delta_time_ms;
-    if (example_state == STATE_IDLE)
-    {
-        example_state = STATE_BUSY;
-    }
+	RCC_SET_APB2ENR(RCC_APB2ENR_TIM1EN);
+
+	CLEAR_BIT(TIM1->CNT,TIM_CNT_CNT);
+
+	MODIFY_REG(TIM1->PSC,TIM_PSC_PSC, psc);
+
+	MODIFY_REG(TIM1->ARR,TIM_ARR_ARR,arr);
+
+	MODIFY_REG(TIM1->RCR,TIM_RCR_REP, rcr);
+
+	SET_BIT(TIM1->CR1,TIM_CR1_URS);
+
+	CLEAR_BIT(TIM1->CR1,TIM_CR1_UDIS);
+
+	SET_BIT(TIM1->CR1,TIM_CR1_CEN);
 }
-*/
+
+void vTim2BasicTimer(uint16_t psc, uint16_t arr, bool_t intpt)
+{
+	RCC_SET_APB1ENR(RCC_APB1ENR_TIM2EN);
+
+	CLEAR_BIT(TIM2->CNT,TIM_CNT_CNT);
+
+	MODIFY_REG(TIM2->PSC,TIM_PSC_PSC, psc);
+
+	MODIFY_REG(TIM2->ARR,TIM_ARR_ARR,arr);
+
+	SET_BIT(TIM2->CR1,TIM_CR1_URS);
+
+	CLEAR_BIT(TIM2->CR1,TIM_CR1_UDIS);
+
+	if(intpt == TRUE)
+	{
+		SET_BIT(TIM2->DIER,TIM_DIER_UIE);
+
+		NVIC_EnableIRQ(TIM2_IRQn);
+	}
+
+	SET_BIT(TIM2->CR1,TIM_CR1_CEN);
+}
 
 /* End of File */

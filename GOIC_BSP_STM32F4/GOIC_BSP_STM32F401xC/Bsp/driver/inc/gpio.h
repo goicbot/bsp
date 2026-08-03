@@ -179,7 +179,7 @@ static inline bool_t xIsGpioOutTypeOutRange(GpioOutputType_t outtype)
 typedef enum{
 	GPIO_LOW_SPEED = 0,
 	GPIO_MEDIUM_SPEED,
-	PORT_HIGH_SPEED,
+	GPIO_HIGH_SPEED,
 	GPIO_VERY_HIGH_SPEED,
 	GPIO_OUTPUT_SPEED_MAX,
 }GpioOutputSpeed_t;
@@ -229,7 +229,7 @@ static inline bool_t xIsGpioPuPdrOutRange(GpioPupdr_t pudpr)
  */
 typedef enum{
 	GPIO_LOW = 0,
-	PORT_HIGH,
+	GPIO_HIGH,
 	GPIO_STATE_MAX,
 }GpioState_t;
 

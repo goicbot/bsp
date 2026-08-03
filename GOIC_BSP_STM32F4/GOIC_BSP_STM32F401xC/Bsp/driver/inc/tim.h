@@ -50,34 +50,14 @@ extern "C" {
 /*******************************************************************************/
 /* Includes -------------------------------------------------------------------*/
 /*******************************************************************************/
-/*--None*/
-/* #include "stm32f4xx_hal.h" */  /**< Example include */
+
+#include "bsp_core.h"
 
 /*******************************************************************************/
 /* Exported Types -------------------------------------------------------------*/
 /*******************************************************************************/
-/*--None*/
-/**
-  * @brief Example of public enumeration type.
-  */
-/*
-typedef enum
-{
-    EXAMPLE_OK = 0U,   ///< Operation successful
-    EXAMPLE_ERROR      ///< Operation failed
-} ExampleStatus_t;
-*/
 
-/**
-  * @brief Example of configuration structure.
-  */
-/*
-typedef struct
-{
-    uint32_t frequency;   ///< Operating frequency in Hz
-    uint16_t voltage;     ///< Operating voltage in mV
-} ExampleConfig_t;
-*/
+/*--None*/
 
 /*******************************************************************************/
 /* Exported Constants ---------------------------------------------------------*/
@@ -100,28 +80,9 @@ typedef struct
 /*******************************************************************************/
 /* Exported Functions ---------------------------------------------------------*/
 /*******************************************************************************/
-/*--None*/
-/**
-  * @brief   Initializes the example module.
-  * @param[in] config  Pointer to configuration structure.
-  * @return  Status code, see @ref ExampleStatus_t.
-  * @note    Must be called before any other function.
-  * @par Example:
-  * @code
-  * ExampleConfig_t cfg = {1000U, 3300U};
-  * Example_Init(&cfg);
-  * @endcode
-  */
-/* ExampleStatus_t Example_Init(const ExampleConfig_t *config); */
 
-/**
-  * @brief   Performs a periodic update.
-  * @param[in] delta_time_ms  Elapsed time in milliseconds.
-  * @return  None.
-  * @note    Should be called in main loop or RTOS task.
-  */
-/* void Example_Update(uint32_t delta_time_ms); */
-
+extern void vTim1BasicTimer(uint16_t, uint16_t, uint8_t);
+extern void vTim2BasicTimer(uint16_t, uint16_t, bool_t);
 /**
   * @}
   */

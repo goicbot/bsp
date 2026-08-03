@@ -77,34 +77,15 @@
 /* Public Function Implementations --------------------------------------------*/
 /*******************************************************************************/
 
-volatile uint32_t sr_debug;
 void TIM2_IRQHandler()
 {
-	sr_debug = TIM2->SR;
-	if(TIM2->SR & TIM_SR_UIF)
+	if(READ_BIT(TIM2->SR, TIM_SR_UIF))
 	{
-	    TIM2->SR &= ~TIM_SR_UIF;
+		CLEAR_BIT(TIM2->SR, TIM_SR_UIF);
 		xGpioToggle(&gpio[PORT_C][PIN_13]);
 	}
 }
 
-
-static void xTim2_INIT()
-{
-	RCC->APB1ENR |= RCC_APB1ENR_TIM2EN;
-	TIM2->CNT = 0x0UL;
-	TIM2->PSC = 8399;
-	TIM2->ARR = 4999;
-	//TIM2->CCMR1 |= TIM_CCMR1_OC1M_0;
-	//TIM2->CCR1 = 0xF4240UL;
-	TIM2->DIER |= TIM_DIER_UIE;
-	TIM2->EGR = TIM_EGR_UG;
-	TIM2->SR = 0;
-
-	NVIC_EnableIRQ(TIM2_IRQn);
-	TIM2->CR1 |= TIM_CR1_CEN;
-
-}
 /**
   * @brief   Main function.
   */
@@ -120,17 +101,14 @@ int main()
 	xGpioToggle(&gpio[PORT_C][PIN_13]);
 
 
-	/*GPIO CONFIG*/								assert(xGpioSetConfig(&gpio[PORT_C][PIN_13]) == BSP_ERROR_OK);
-
-	xGpioToggle(&gpio[PORT_C][PIN_13]);
-
-	xTim2_INIT();
+	vTim2BasicTimer(8399,4999,TRUE);
 	uint32_t buf[3] = {0x01, 0xD0, 0x31};
 	uint8_t size = 3;
 	uint32_t crc = 0x00;
 	crc = 0x00UL;
 	xCrcCalc(buf, size ,&crc);
 	/* CRC driver Close */						assert(xCrcClose() == BSP_ERROR_OK);
+
 	while(1) /* Infinite Loop*/
 	{
 
